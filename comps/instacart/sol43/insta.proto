@@ -1,0 +1,24 @@
+message User {
+  optional int32 uid = 1;
+  // test vs. train set
+  optional bool test = 2;
+  repeated Order orders = 3;
+
+  // Only present when test = true, this is the final order. It's notably 
+  // different from the others because we don't know the products ordered,
+  // so it's separated from the rest in the list above.
+  optional Order testorder = 4;
+}
+
+message Order {
+  optional int32 orderid = 1;
+  // Starts from 1 (I'm pretty sure)
+  optional int32 nth = 2;
+  // day of week, hour of day
+  // should probably be enums?
+  optional int32 dow = 3;
+  optional int32 hour = 4;
+  optional int32 days_since_prior = 5;
+
+  repeated int32 products = 6 [packed=true];
+}

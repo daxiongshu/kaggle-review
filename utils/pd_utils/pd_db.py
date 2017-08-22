@@ -6,11 +6,7 @@ import pandas as pd
 import numpy as np
 import os
 import gc
-try:
-    import psutil
-    _summ = psutil.virtual_memory()
-except:
-    pass
+from utils.utils import print_mem_time 
 
 class pd_DB(object):
     def __init__(self,flags,tables=[],prob_dtype=False):
@@ -44,12 +40,7 @@ class pd_DB(object):
                     dtype = self._get_dtype(fname)
                 data[name] = pd.read_csv(fname,dtype=dtype)
                 data[name].to_pickle(pname)
-            try:
-                print("Loaded",fname.split('/')[-1],data[name].shape, end='')
-                summ = psutil.virtual_memory()
-                print(" Used: %.2f GB %.2f%%"%((summ.used-_summ.used)/(1024.0*1024*1024),summ.percent-_summ.percent))
-            except:
-                print()              
+            print_mem_time("Loaded {} {}".format(fname.split('/')[-1],data[name].shape))
         self.data = data # no copy, pass the inference
         print()
 
@@ -82,4 +73,5 @@ class pd_DB(object):
         return dtype
 
     def snoop(self):
-        raise NotImplementedError() 
+        raise NotImplementedError()
+

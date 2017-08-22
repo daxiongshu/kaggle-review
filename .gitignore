@@ -1,3 +1,7 @@
+*.p
 *.pkl
 *.pyc
 *.tfrecords
+*.csv
+*.b
+*.txt
