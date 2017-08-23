@@ -68,6 +68,8 @@ class pd_DB(object):
             else:
                 dtype[col] = data[col].dtype
         print("\n {} {} \n".format(fname,dtype))
+        with open('%s/dtype.txt'%self.flags.data_path,'a') as fo:
+            fo.write("{} {} \n".format(fname,dtype))
         del data
         gc.collect()
         return dtype

@@ -1,3 +1,4 @@
+import tensorflow as tf
 from utils.tf_utils.BaseSeqData import BaseSeqData
 from comps.instacart.basket_db import basketDB
 from comps.instacart.sol43.insta_pb2 import User, Order
@@ -7,6 +8,9 @@ import numpy as np
 from utils.utils import print_mem_time
 import pandas as pd
 import gc
+
+TEST_UID = 2455
+LOG_EVERY = 100
 
 class tfData(BaseSeqData):
 
@@ -23,14 +27,16 @@ class tfData(BaseSeqData):
         self._load_dic()
         inpath = self.flags.input_path
         self._load_db(files=["orders"])
-        orders = self.pdDB.data["orders"]      
-        #writer = tf.python_io.TFRecordWriter(outpath)
+        orders = self.pdDB.data["orders"].set_index('order_id',drop=0)      
+        writer = tf.python_io.TFRecordWriter(outpath)
+        i = 0
         for uid, oids in self.u2o.iteritems():
             user = User()
             user.uid = uid
             ordered_orders = orders.loc[oids].sort_values('order_number')
             for oid, orow in ordered_orders.iterrows():
                 test = orow.eval_set == 'test'
+                #print(oid,orow)
                 if test:
                     user.test = True
                     order = user.testorder
@@ -49,11 +55,16 @@ class tfData(BaseSeqData):
                     #user.testorder = order
                     pass
                 else:
-                    order.products.extend(oid_to_pids.loc[oid])
-                    print(order)
-                break
-            break
-        #writer.close()
+                    order.products.extend(self.o2p.loc[oid])
+            writer.write(user.SerializeToString())
+            if uid == TEST_UID:
+                print ("Writing uid {} to testuser.pb".format(uid))
+                with open('%s/testuser.pb'%self.flags.record_path, 'wb') as f:
+                    f.write(user.SerializeToString())
+            i += 1
+            if i % LOG_EVERY == 0:
+                print_mem_time ("{} users written".format(i))
+        writer.close()
 
     def _load_dic(self):
         path = self.flags.data_path
