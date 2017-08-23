@@ -9,7 +9,7 @@ from utils.utils import print_mem_time
 import pandas as pd
 import gc
 
-TEST_UID = 2455
+TEST_UID = 2455 # randomly select one user in train for sanity check
 LOG_EVERY = 100
 
 class tfData(BaseSeqData):
@@ -18,6 +18,9 @@ class tfData(BaseSeqData):
         super().__init__(flags)
         self.pdDB = None
         self._write_user_tfrecord()
+
+    def _write_train_test_tfrecord():
+        pass
 
     def _write_user_tfrecord(self):
         outpath = "%s/users.tfrecords"%self.flags.record_path
@@ -34,7 +37,7 @@ class tfData(BaseSeqData):
             user = User()
             user.uid = uid
             ordered_orders = orders.loc[oids].sort_values('order_number')
-            for oid, orow in ordered_orders.iterrows():
+            for oid, orow in ordered_orders.iterrows(): # don't forget set_index!
                 test = orow.eval_set == 'test'
                 #print(oid,orow)
                 if test:
