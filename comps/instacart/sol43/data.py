@@ -1,17 +1,59 @@
 from utils.tf_utils.BaseSeqData import BaseSeqData
 from comps.instacart.basket_db import basketDB
+from comps.instacart.sol43.insta_pb2 import User, Order
 from collections import namedtuple
 import os
 import numpy as np
 from utils.utils import print_mem_time
 import pandas as pd
+import gc
 
 class tfData(BaseSeqData):
 
     def __init__(self,flags):
         super().__init__(flags)
         self.pdDB = None
+        self._write_user_tfrecord()
+
+    def _write_user_tfrecord(self):
+        outpath = "%s/users.tfrecords"%self.flags.record_path
+        if os.path.exists(outpath)==True:
+            print("%s exists."%outpath)
+            return
         self._load_dic()
+        inpath = self.flags.input_path
+        self._load_db(files=["orders"])
+        orders = self.pdDB.data["orders"]      
+        #writer = tf.python_io.TFRecordWriter(outpath)
+        for uid, oids in self.u2o.iteritems():
+            user = User()
+            user.uid = uid
+            ordered_orders = orders.loc[oids].sort_values('order_number')
+            for oid, orow in ordered_orders.iterrows():
+                test = orow.eval_set == 'test'
+                if test:
+                    user.test = True
+                    order = user.testorder
+                else:
+                    order = user.orders.add() # what does this mean?
+                order.orderid = oid
+                order.nth = orow.order_number
+                order.dow = orow.order_dow
+                order.hour = orow.order_hour_of_day
+                days = orow.days_since_prior_order
+                if not pd.isnull(days):
+                    order.days_since_prior = int(days)
+                # If this is a test order, products gets left empty. We don't
+                # know which products are in this order.
+                if test:
+                    #user.testorder = order
+                    pass
+                else:
+                    order.products.extend(oid_to_pids.loc[oid])
+                    print(order)
+                break
+            break
+        #writer.close()
 
     def _load_dic(self):
         path = self.flags.data_path
@@ -34,30 +76,23 @@ class tfData(BaseSeqData):
             o2p.to_pickle(p)
         else:
             o2p = pd.read_pickle(p)
+        self.u2o, self.o2p = u2o, o2p
         print_mem_time("Loaded o2p %d"%len(o2p))
+        self._reset_pdDB()
 
-    def _load_db(self):
+    def _reset_pdDB(self):
+        del self.pdDB
+        gc.collect()
+        self.pdDB = None
+
+    def _load_db(self, files="all"):
         if self.pdDB is not None:
             return
         path = self.flags.input_path
         Table = namedtuple('Table', 'name fname dtype')
-
-
-        TABLES = [Table('op_train',"%s/order_products__train.csv"%path,{}),
-            Table('op_prior',"%s/order_products__prior.csv"%path,{}),
-            Table('orders',"%s/orders.csv"%path,{}),
-            Table('aisles',"%s/aisles.csv"%path,{}),
-            Table('departments',"%s/departments.csv"%path,{}),
-        ]
+        fnames = "order_products__train.csv,order_products__prior.csv,orders.csv,aisles.csv,departments.csv".split(',')
+        names = "op_train,op_prior,orders,aisles,departments".split(',')
+        TABLES = [Table(i,"%s/%s"%(path,j),{}) for i,j in zip(names,fnames) if files =="all" or i in files]
         self.pdDB = basketDB(self.flags,TABLES,prob_dtype=True)
 
 
-    def _write_user_tfrecord(self):
-        outpath = "%s/users.tfrecords"%self.flags.record_path
-        if os.path.exists(outpath)==True:
-            print("%s exists."%outpath)
-            return 
-        inpath = self.flags.input_path
-        writer = tf.python_io.TFRecordWriter(outpath)
-         
-        writer.close()
