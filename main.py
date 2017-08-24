@@ -19,7 +19,7 @@ flags.DEFINE_string('split_path', None, 'path of split file')
 flags.DEFINE_string('embedding_path', None, 'Embedding path')
 flags.DEFINE_integer("classes",2,"number of classes")
 flags.DEFINE_integer("fold",None,"index of fold")
-flags.DEFINE_integer("num_folds",None,"number of folds")
+flags.DEFINE_integer("folds",None,"number of folds")
 flags.DEFINE_string('log_path', None, 'Log path')
 flags.DEFINE_integer('batch_size',64,"batch size")
 flags.DEFINE_integer('threads',4,"number of threads")
@@ -64,10 +64,13 @@ def print_args():
 def main(_):
     print_args()
     if FLAGS.comp == "instacart":
-        from comps.instacart.instacart import run_instacart
-        run_instacart(FLAGS)
+        from comps.instacart.run import run_sol
+    elif FLAGS.comp == "carvana":
+        from comps.carvana.run import run_sol
     else:
         print("Unknown competion %s"%FLAGS.comp)
         assert False
+    run_sol(FLAGS)
+
 if __name__ == "__main__":
     tf.app.run()

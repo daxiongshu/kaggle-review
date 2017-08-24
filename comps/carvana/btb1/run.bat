@@ -1,0 +1,1 @@
+python main.py --comp carvana --sol btb1 --split_path comps/carvana/btb1/data/split.npy --record_path comps/carvana/btb1/data/train.tfrecords --width 1918 --height 1280 --color 3 --classes -1 --task cv_train --folds 4 --fold 0 --input_path ../input/train  
