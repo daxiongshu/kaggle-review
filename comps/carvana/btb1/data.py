@@ -5,7 +5,7 @@ import random
 from PIL import Image
 import tensorflow as tf
 from utils.tf_utils.utils import _int64_feature, _bytes_feature
-
+from utils.utils import split
 class tfCarData(BaseImageData):
 
     def write_tfrecords(self):
@@ -17,7 +17,7 @@ class tfCarData(BaseImageData):
 
     def write_cv_tfrecords(self):
         folds = self.flags.folds
-        dic = self.split()
+        dic = split(self.flags)
         for i in range(folds):
             record_path = self.flags.record_path.replace(".tfrecords","_%d.tfrecords"%i)
             imgs = dic[i]
@@ -30,23 +30,6 @@ class tfCarData(BaseImageData):
         imgs = ["%s/%s"%(path,img) for img in os.listdir(path)]
         labels = None
         self.write_tfrecord(imgs, labels, record_path)
-
-    def split(self):
-        if os.path.exists(self.flags.split_path):
-            return np.load(self.flags.split_path).item()
-        folds = self.flags.folds
-        path = self.flags.input_path
-        random.seed(6)
-        img_list = ["%s/%s"%(path,img) for img in os.listdir(path)]
-        random.shuffle(img_list)
-        dic = {}
-        n = len(img_list)
-        num = (n+folds-1)//folds
-        for i in range(folds):
-            s,e = i*num,min(i*num+num,n)
-            dic[i] = img_list[s:e]
-        np.save(self.flags.split_path,dic)
-        return dic
 
     def _get_example(self,data,label):
         # by default, label is a single scaler per image

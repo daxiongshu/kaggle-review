@@ -144,7 +144,7 @@ labels))
         for var, val in zip(tvars, tvars_vals):
             weights[var.name] = val
 
-        name = "%s/%s_%s_%s_%d.npy"%(self.flags.save_path, self.flags.app, self.flags.run_name, self.flags.net, self.flags.pre_epochs + int(self.epoch))
+        name = "%s/%s_%s_%s_%d.npy"%(self.flags.save_path, self.flags.comp, self.flags.run_name, self.flags.net, self.flags.pre_epochs + int(self.epoch))
         np.save(name, weights)
 
     def print_all_variables(self):
@@ -478,6 +478,12 @@ labels))
 
     def _mse(self, x, y):
         return tf.reduce_mean(tf.square(x-y))
+
+    def _get_acc_loss(self,aloss,loss):
+        if aloss == 0:
+            return loss
+        else:
+            return aloss*0.9 + loss*0.1
 
     def just_graph_with_input(self,inputs):
         self._build(inputs)
