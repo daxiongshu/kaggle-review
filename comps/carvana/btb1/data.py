@@ -1,12 +1,82 @@
 from utils.tf_utils.BaseImageData import BaseImageData
 import os
 import numpy as np
-import random
+from random import shuffle
 from PIL import Image
 import tensorflow as tf
 from utils.tf_utils.utils import _int64_feature, _bytes_feature
 from utils.utils import split
+
 class tfCarData(BaseImageData):
+
+    def tr_generator(self,keep_data = True):
+        fold = self.flags.fold
+        epochs = self.flags.epochs
+        dic = split(self.flags)
+        imgs = sum([dic[i] for i in dic if i!=fold],[])
+        folds = [i for i in dic if i!=fold]
+        print("Train using folds {} images {}".format(folds,len(imgs)))
+        del dic
+        return self._gen_random_batch(epochs,imgs,keep_data)
+
+    def va_generator(self,keep_data = True,first=False):
+        fold = self.flags.fold
+        dic = split(self.flags)
+        imgs = dic[fold]
+        del dic
+        if first:
+            print("Valid using fold {} images {}".format(fold,len(imgs)))
+        return self._gen_random_batch(1,imgs,keep_data)
+
+    def test_generator(self,keep_data=False):
+        B,W,H = self.flags.batch_size, self.flags.width, self.flags.height
+        path = self.flags.input_path
+        loaded = {}
+        if "cv" not in self.flags.task:
+            # test images to submit
+            imgs = ["%s/%s"%(path,i) for i in os.listdir(path)]
+        else:
+            imgs = split(self.flags)[self.flags.fold]
+        self.test_imgs = imgs
+        xs,ns = [],[]
+        for img in imgs:
+            if len(xs) == B:
+                yield np.array(xs),ns
+                del xs,ns
+                xs,ns = [],[]
+            if img in loaded:
+                x = loaded[img]
+            else:
+                x = np.array(Image.open(img).resize([W,H]))
+                if keep_data:
+                    loaded[img] = x
+            xs.append(x)
+            ns.append(img.split('/')[-1])
+        if len(xs):
+            yield np.array(xs),ns
+
+    def _gen_random_batch(self,epochs,imgs,keep_data):
+        B,W,H = self.flags.batch_size, self.flags.width, self.flags.height
+        loaded = {}
+        xs,ys = [],[]
+        for i in range(epochs):
+            shuffle(imgs)
+            for img in imgs:
+                if len(xs) == B:
+                    yield np.array(xs),np.array(ys),i
+                    del xs,ys
+                    xs,ys = [],[]
+
+                if img in loaded:
+                    x,y = loaded[img]
+                else:
+                    x = np.array(Image.open(img).resize([W,H]))
+                    label = img.replace(".jpg","_mask.gif").replace("train","train_masks")
+                    y = np.array(Image.open(label).resize([W,H]))
+                    if keep_data:
+                        loaded[img] = (x,y)
+                xs.append(x)
+                ys.append(y)
 
     def write_tfrecords(self):
         task = self.flags.task

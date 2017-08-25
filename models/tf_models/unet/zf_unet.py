@@ -8,14 +8,20 @@ class ZF_UNET(BaseUnet):
         net_name = "ZF_UNET"
         width,height = self.flags.width,self.flags.height
         with tf.variable_scope(net_name):
+
+            if self.flags.visualize and 'image' in self.flags.visualize:
+                tf.summary.image(name="images", tensor=inputs,
+                    max_outputs=3, collections=[tf.GraphKeys.IMAGES])
+
+            net = inputs
             if resize:
                 with tf.name_scope("Resize"):
-                    inputs = tf.image.resize_images(inputs,(height,width))
+                    net = tf.image.resize_images(net,(height,width))
 
             with tf.name_scope("Preprocess"):
-                inputs = inputs/256.0 - 0.5
+                net = net/256.0 - 0.5
 
-            conv1, net = self._ZF_down_block(inputs, ksizes=[3,3], filters=[32,32], 
+            conv1, net = self._ZF_down_block(net, ksizes=[3,3], filters=[32,32], 
                 activations=['relu']*2, strides=[1,1], batchnorm=[True]*2, dropout=dropout,
                 name = "%s/down%d"%(net_name,1), keep_prob = self.keep_prob)
 
@@ -61,6 +67,10 @@ class ZF_UNET(BaseUnet):
 
             net = self.conv_block(net, "%s/conv_block1"%(net_name), ksizes=[1], filters=[self.flags.classes],
                 activations=['sigmoid'], strides=[1], batchnorm=[True])
+ 
+            if self.flags.visualize and 'mask' in self.flags.visualize:
+                tf.summary.image(name="masks", tensor=net,
+                    max_outputs=3, collections=[tf.GraphKeys.IMAGES])
 
             self.logit = net
 

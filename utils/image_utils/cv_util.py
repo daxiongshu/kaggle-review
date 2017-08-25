@@ -57,7 +57,7 @@ def random_batch_generator(batch_size,w,h):
         #image_list = preprocess_batch(image_list)
         mask_list = np.array(mask_list, dtype=np.float32)
         mask_list /= 255.0
-        yield image_list, mask_list
+        yield image_list, mask_list, 0
 
 #def preprocess_batch(batch):
 #    batch /= 256

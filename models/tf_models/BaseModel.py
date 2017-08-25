@@ -107,7 +107,12 @@ labels))
         # This function could be overwritten
         if not self.flags.visualize or self.flags.visualize=='none':
             return
-        summ_collection = "%s training summaries"%(self.flags.app)
+        summ_collection = "{} {} {} summaries".format(self.flags.comp, self.flags.sol, self.flags.run_name)
+        if len(tf.get_collection(tf.GraphKeys.SCALARS)):
+            self.scaler_op = tf.summary.merge(tf.get_collection(tf.GraphKeys.SCALARS))
+        if len(tf.get_collection(tf.GraphKeys.IMAGES)):
+            self.image_op = tf.summary.merge(tf.get_collection(tf.GraphKeys.IMAGES))
+
         for i in tf.get_collection(tf.GraphKeys.SCALARS):
             tf.add_to_collection(summ_collection, i)
         for i in tf.get_collection(tf.GraphKeys.WEIGHTS):
@@ -479,11 +484,11 @@ labels))
     def _mse(self, x, y):
         return tf.reduce_mean(tf.square(x-y))
 
-    def _get_acc_loss(self,aloss,loss):
+    def _get_acc_loss(self,aloss,loss,ratio=0.9):
         if aloss == 0:
             return loss
         else:
-            return aloss*0.9 + loss*0.1
+            return aloss*ratio + loss*(1-ratio)
 
     def just_graph_with_input(self,inputs):
         self._build(inputs)
