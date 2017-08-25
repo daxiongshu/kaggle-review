@@ -1,4 +1,5 @@
 rem train with 3 folds and validate on 1 fold
+rem visualization: learning curve, image, mask and gradient
 python main.py --comp carvana --metric dice_coef --batch_size 32 --classes 1 --opt adam --learning_rate 0.001 --save_path comps/carvana/btb1/weights --net zf_unet --task train_cv --sol btb1 --width 224 --height 128 --split_path comps/carvana/btb1/data/split.npy --folds 4 --input_path ../input/train --epochs 10 --fold 0 --visualize image,mask,grad --log_path comps/carvana/btb1/logs/run1
 
 rem predict 1 fold
