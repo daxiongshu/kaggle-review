@@ -24,6 +24,7 @@ class tfData(BaseSeqData):
         self._write_user_tfrecord()
         self._partition_test_user_tfrecord()
         self._write_train_tfrecord(max_prods=np.inf)
+        self._write_test_tfrecord(max_prods=np.inf)
         #self._poke_seq_data()
         #self._poke_user_tfrecords()
   
@@ -82,6 +83,23 @@ class tfData(BaseSeqData):
         writer = tf.python_io.TFRecordWriter(outpath, options=writer_options)
         ces = 0
         for cu,user in enumerate(self._iterate_wrapped_users(path, mode="train")):
+            for ce,example in enumerate(self._get_user_sequence_examples(user, max_prods = max_prods)):
+                writer.write(example.SerializeToString())
+            ces += ce
+            if cu>0 and cu%100 == 0:
+                print_mem_time("%d users %d samples"%(cu,ces))
+
+    def _write_test_tfrecord(self,max_prods):
+        outpath = "%s/test.tfrecords"%self.flags.record_path
+        if os.path.exists(outpath)==True:
+            print("%s exists."%outpath)
+            return
+        path = "%s/test_users.tfrecords"%self.flags.record_path
+        ctype = getattr(tf.python_io.TFRecordCompressionType, "GZIP")
+        writer_options = tf.python_io.TFRecordOptions(compression_type=ctype)
+        writer = tf.python_io.TFRecordWriter(outpath, options=writer_options)
+        ces = 0
+        for cu,user in enumerate(self._iterate_wrapped_users(path, mode="test")):
             for ce,example in enumerate(self._get_user_sequence_examples(user, max_prods = max_prods)):
                 writer.write(example.SerializeToString())
             ces += ce
