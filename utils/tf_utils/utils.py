@@ -26,14 +26,20 @@ def bbox_iou(box1,box2):
     aa = min(a1,a2)
     return a*1.0/aa
 
+def intseqfea(values):
+    return tf.train.FeatureList(feature=[_int64_feature(v) for v in values])
+
+def floatseqfea(values):
+    return tf.train.FeatureList(feature=[_float_feature(v) for v in values])
 
 def _int64_feature(value):
-    return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=[int(value)]))
 
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
-
+def _float_feature(value):
+    return tf.train.Feature(float_list=tf.train.FloatList(value=[float(value)]))
 
 def read_embed_dic(name):
     """
