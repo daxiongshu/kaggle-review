@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import time
 from models.tf_models.BaseModel import BaseModel
+from utils.np_utils.nn_util import orthogonal 
 
 class BaseRnnModel(BaseModel):
 
@@ -39,19 +40,19 @@ class BaseRnnModel(BaseModel):
             return x
 
 
-    def _get_rnn_cell(self, cell_name, num_units, activation=tf.tanh,use_peepholes=False):
+    def _get_rnn_cell(self, cell_name, args):
         if cell_name == "BASIC_LSTM":
-            cell = tf.contrib.rnn.BasicLSTMCell(num_units=num_units,activation=activation)
+            cell = tf.contrib.rnn.BasicLSTMCell(**args)
         elif cell_name == "GRU":
-            cell = tf.contrib.rnn.GRUCell(num_units=num_units,activation=activation)
+            cell = tf.contrib.rnn.GRUCell(**args)
         elif cell_name == "LSTM":
-            cell = tf.contrib.rnn.LSTMCell(num_units=num_units,activation=activation,use_peepholes=use_peepholes)
+            cell = tf.contrib.rnn.LSTMCell(**args)
         elif cell_name == "BLOCK_LSTM":
-            cell = tf.contrib.rnn.LSTMBlockCell(num_units=num_units)
+            cell = tf.contrib.rnn.LSTMBlockCell(**args)
         elif cell_name == "BLOCK_GRU":
-            cell = tf.contrib.rnn.GRUBlockCell(num_units)
+            cell = tf.contrib.rnn.GRUBlockCell(**args)
         elif cell_name == "NAS":
-            cell = tf.contrib.rnn.NASCell(num_units)
+            cell = tf.contrib.rnn.NASCell(**args)
         else:
             print("Unknown cell name", cell_name)
             assert 0
@@ -72,3 +73,10 @@ class BaseRnnModel(BaseModel):
                 seqs[c].extend([val]*(maxl - len(seq)))
         return seqs
 
+
+    def _orthogonal_initializer(self, scale=1.0):
+        """Orthogonal initializer."""
+        def _initializer(shape, dtype=tf.float32,
+            partition_info=None):  # pylint: disable=unused-argument
+            return tf.constant(orthogonal(shape) * scale, dtype)
+        return _initializer
