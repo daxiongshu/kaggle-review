@@ -7,9 +7,10 @@ def print_args():
     dic = FLAGS.__flags
     print()
     keys = sorted(dic.keys())
+    print("common flags:")
     for i in keys:
-        #print(i,dic[i])
-        print('{:>23} {:>23}'.format(i, str(dic[i])))
+        if dic[i]:
+            print('{:>23} {:>23}'.format(i, str(dic[i])))
     print()
 
 
@@ -22,6 +23,7 @@ def main(_):
     else:
         print("Unknown competion %s"%FLAGS.comp)
         assert False
+    print("run competition %s solution %s"%(FLAGS.comp,FLAGS.sol))
     run_sol(FLAGS)
 
 if __name__ == "__main__":
