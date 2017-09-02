@@ -1,10 +1,11 @@
-import tensorflow as tf
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from flags import FLAGS
 
-def print_args():
-    dic = FLAGS.__flags
+def print_args(args = None):
+    try: 
+        dic = FLAGS.__flags
+    except:
+        dic = vars(args)
     print()
     keys = sorted(dic.keys())
     print("common flags:")
@@ -29,4 +30,13 @@ def main(_):
     run_sol(FLAGS)
 
 if __name__ == "__main__":
-    tf.app.run()
+    try:
+        import tensorflow as tf
+        from flags import FLAGS
+        tf.app.run()
+    except:
+        from parser import get_parser
+        parser = get_parser()
+        args = parser.parse_args() 
+        FLAGS = vars(args)
+        main(None)
