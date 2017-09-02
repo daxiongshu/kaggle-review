@@ -1,66 +1,56 @@
-import tensorflow as tf
-import copy
-################################################################
-#common flags
-flags = tf.app.flags
-flags.DEFINE_integer("start",None,"start point")
-flags.DEFINE_integer("sample_size",None,"sample size")
-flags.DEFINE_integer("num_units",0,"number of units")
-#flags.DEFINE_integer("seq_len",None,"length of the sequence")
-flags.DEFINE_integer("embedding_size",0,"embedding size")
-flags.DEFINE_string('opt', 'sgd', 'optimizer')
-flags.DEFINE_string('sol', None, 'id of the solution')
-flags.DEFINE_string('cell', 'BASIC_LSTM', 'name of the rnn cells')
-flags.DEFINE_integer("seed",0,"seed")
-flags.DEFINE_integer("seeds",0,"seeds")
-flags.DEFINE_string('run_name', 'run', 'name of the experiment')
-flags.DEFINE_string('split_path', None, 'path of split file')
-flags.DEFINE_string('embedding_path', None, 'Embedding path')
-flags.DEFINE_integer("classes",None,"number of classes")
-flags.DEFINE_integer("fold",None,"index of fold")
-flags.DEFINE_integer("folds",None,"number of folds")
-flags.DEFINE_string('log_path', None, 'Log path')
-flags.DEFINE_integer('batch_size',64,"batch size")
-flags.DEFINE_integer('threads',4,"number of threads")
-flags.DEFINE_integer("augmentation",0,"data augmentation")
-flags.DEFINE_float("learning_rate",0.1,"Learning rate")
-flags.DEFINE_float("threshold",0.2,"threshold")
-flags.DEFINE_float("keep_prob",None,"keep prob")
-flags.DEFINE_string("metric","Accuracy","metric")
-flags.DEFINE_float("lambdax",0.0001,"lambda for L2 regularization")
-flags.DEFINE_float("epsilon",0.01,"epsilon in RL")
-flags.DEFINE_integer("color",None,"Color channels")
-flags.DEFINE_integer("epochs",None,"number of epochs")
-flags.DEFINE_integer("pre_epochs",0,"pretrained number of epochs")
-flags.DEFINE_string('comp', None, 'name of the competition')
-flags.DEFINE_string('task', None, 'train or test')
-flags.DEFINE_string('visualize',None,'visualize verbosity')
-flags.DEFINE_string('save_path', 'weights', 'path to save weights')
-flags.DEFINE_integer('save_epochs',1,'for how many epochs are weights saved')
-flags.DEFINE_string('load_path', None , 'path to load weights')
-flags.DEFINE_string('net',None, 'net name')
-flags.DEFINE_string('pred_path', 'result.csv', 'name of prediction files')
-flags.DEFINE_string('record_path', None, 'path of tf record')
-flags.DEFINE_string('data_path', None, 'path of other data')
-flags.DEFINE_string('input_path', None, 'input path')
-flags.DEFINE_integer("width",None,"width of image to resize to")
-flags.DEFINE_integer("height",None,"height of image to resize to")
-flags.DEFINE_string('add_paths', None, 'additional input paths')
-flags.DEFINE_string('add_record_paths', None, 'additional records')
-flags.DEFINE_float("momentum",0.0,"momentum")
+import argparse
+
+def get_parser():
+    ################################################################
+    #common flags
+    parser = argparse.ArgumentParser()
+    parser.add_argument('opt',help="optimizor")
+    parser.add_argument('sol', help='id of the solution')
+    parser.add_argument("seed",help="random seed")
+    parser.add_argument('opt', help='optimizer')
+    parser.add_argument("seed",help="seed")
+    parser.add_argument('run_name', help='name of the experiment')
+    parser.add_argument("classes",help="number of classes")
+    parser.add_argument("fold",help="index of fold")
+    parser.add_argument("folds",help="number of folds")
+    parser.add_argument('log_path',help='Log path')
+    parser.add_argument('batch_size',help="batch size")
+    parser.add_argument('threads',help="number of CPU threads")
+    parser.add_argument("augmentation",help="data augmentation")
+    parser.add_argument("learning_rate",help="Learning rate")
+    parser.add_argument("threshold",help="threshold")
+    parser.add_argument("keep_prob",help="keep prob")
+    parser.add_argument("metric",help="evaluating metric")
+    parser.add_argument("lambdax",help="lambda for L2 regularization")
+    parser.add_argument("epsilon",help="epsilon in RL")
+    parser.add_argument("color",help="Color channels")
+    parser.add_argument("epochs",help="number of epochs")
+    parser.add_argument("pre_epochs",help="pretrained number of epochs")
+    parser.add_argument('comp', help='name of the competition')
+    parser.add_argument('task', help='name of the task')
+    parser.add_argument('visualize',help='visualize options')
+    parser.add_argument('save_path',help='path to save weights')
+    parser.add_argument('save_epochs',help='for how many epochs are weights saved')
+    parser.add_argument('load_path', help='path to load weights')
+    parser.add_argument('net',help='net name')
+    parser.add_argument('pred_path',help='path of prediction files')
+    parser.add_argument('record_path',help='path of tf record')
+    parser.add_argument('input_path',help='input path')
+    parser.add_argument("width",help="width of image to resize to")
+    parser.add_argument("height",help="height of image to resize to")
+    parser.add_argument('add_paths',help='additional input paths')
+    parser.add_argument('add_record_paths',help='additional records')
+    parser.add_argument("momentum",help="momentum")
 #####################################################################
 
 #####################################################################
 #competition specific flags
-if flags.FLAGS.comp == "instacart":
-    if flags.FLAGS.sol == "43":
-        flags.DEFINE_integer("max_prod",None,"maximum number of products per user")
-        flags.DEFINE_integer("prod_embed_size",None,"embedding size of products")        
-        flags.DEFINE_integer("dep_embed_size",None,"embedding size of department")
-        flags.DEFINE_integer("ail_embed_size",None,"embedding size of aisle")
-        flags.DEFINE_integer("max_seq_len",None,"maximum length of the sequence")
+    parser.add_argument("max_prod",help="maximum number of products per user")
+    parser.add_argument("prod_embed_size",help="embedding size of products")        
+    parser.add_argument("dep_embed_size",help="embedding size of department")
+    parser.add_argument("ail_embed_size",help="embedding size of aisle")
+    parser.add_argument("max_seq_len",help="maximum length of the sequence")
 
 #####################################################################
-
-FLAGS = flags.FLAGS
+    return parser
 

@@ -32,10 +32,10 @@ def main(_):
 if __name__ == "__main__":
     try:
         import tensorflow as tf
-        from flags import FLAGS
+        from tf_flags import FLAGS
         tf.app.run()
     except:
-        from parser import get_parser
+        from flags import get_parser
         parser = get_parser()
         args = parser.parse_args() 
         FLAGS = vars(args)
