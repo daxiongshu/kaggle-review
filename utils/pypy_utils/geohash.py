@@ -51,7 +51,7 @@ def decode(geohash):
     lons = "%.*f" % (max(1, int(round(-log10(lon_err)))) - 1, lon)
     if '.' in lats: lats = lats.rstrip('0')
     if '.' in lons: lons = lons.rstrip('0')
-    return lats, lons
+    return float(lats), float(lons)
 
 def encode(latitude, longitude, precision=12):
     """
