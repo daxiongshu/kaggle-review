@@ -7,9 +7,8 @@ def print_args():
         dic = FLAGS.__flags
     except:
         dic = vars(FLAGS)#vars(args)
-    print()
     keys = sorted(dic.keys())
-    print("common flags:")
+    print("\ncommon flags:")
     for i in keys:
         if dic[i]:
             print('{:>23} {:>23}'.format(i, str(dic[i])))

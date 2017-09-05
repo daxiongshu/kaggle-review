@@ -1,4 +1,4 @@
-from math import log10
+from math import log10,cos
 
 #  Note: the alphabet in geohash differs from the common base32
 #  alphabet described in IETF's RFC 4648
@@ -87,6 +87,16 @@ def encode(latitude, longitude, precision=12):
             bit = 0
             ch = 0
     return ''.join(geohash)
+
+def str_coord(coord):
+    lat,lon = coord
+    lat = "%.2f"%lat
+    lon = "%.2f"%lon
+    return (lat,lon)
+
+def float_coord(coord):
+    lat,lon = coord
+    return float(lat),float(lon)
 
 if __name__ == "__main__":
     print(decode("wx4gfbe"))
