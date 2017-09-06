@@ -1,5 +1,6 @@
 comps/zillow
 comps/mobike
+comps/carvana/carl
 *.npy
 *.pb
 *.p
