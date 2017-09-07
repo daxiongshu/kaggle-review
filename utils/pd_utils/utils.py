@@ -9,6 +9,7 @@ def rm_const_cols(df,bar=0.999):
         if ratio>=bar:
             const.append(col)   
             print(ratio,col)
+    print("df shape",df.shape,"num const cols",len(const))
     if len(const)==0:
         return df
     else:

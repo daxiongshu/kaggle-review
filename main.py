@@ -23,6 +23,14 @@ def main(_):
         from comps.carvana.run import run_sol
     elif FLAGS.comp == "mobike":
         from comps.mobike.run import run_sol
+    elif FLAGS.comp == "zillow":
+        from comps.zillow.run import run_sol
+    elif FLAGS.comp == "wiki":
+        from comps.wiki.run import run_sol
+    elif FLAGS.comp == "eng_norm":
+        from comps.eng_norm.run import run_sol
+    elif FLAGS.comp == "caesars":
+        from comps.caesars.run import run_sol
     else:
         print("Unknown competion %s"%FLAGS.comp)
         assert False

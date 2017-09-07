@@ -1,6 +1,9 @@
 comps/zillow
 comps/mobike
 comps/carvana/carl
+comps/caesars
+comps/wiki
+comps/eng_norm
 *.npy
 *.pb
 *.p
