@@ -36,5 +36,9 @@ class xgb_rank(object):
         dtest.set_group(Xg)
         return self.bst.predict(dtest)
 
+
     def feature_importance(self):
-        return self.bst.get_fscore()
+        fscore = self.bst.get_fscore()
+        feas = sort_value(fscore)
+        return [(fea,fscore[fea]) for fea in feas]
+

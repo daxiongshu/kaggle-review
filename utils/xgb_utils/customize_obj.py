@@ -7,10 +7,10 @@ def mae_obj(preds, dtrain):
     y  = dtrain.get_label()
     yp = preds
     c  = 2.0
-    delta = yp-y
+    x = yp-y
     grad  =  c*x / (np.abs(x)+c)
     hess = c**2 / (np.abs(x)+c)**2
-    return rada, hess
+    return grad, hess
 
 # metric for mae
 def mae_metric(preds, dtrain):

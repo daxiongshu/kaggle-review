@@ -10,10 +10,8 @@ def rm_const_cols(df,bar=0.999):
             const.append(col)   
             print(ratio,col)
     print("df shape",df.shape,"num const cols",len(const))
-    if len(const)==0:
-        return df
-    else:
-        return df.drop(const,axis=1) 
+    if len(const)>0:
+        df.drop(const,axis=1,inplace=True)
 
 def get_ymd(df,col,deli='-',order="ymd"):
     def _parse_order(order):

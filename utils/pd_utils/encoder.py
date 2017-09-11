@@ -10,8 +10,8 @@ def lbl_encode(df_tr,df_te,cols=None,objonly=True):
     for col in cols:
         if objonly and df[col].dtype!='object':
             continue 
-        lbl.fit(df[col])
-        df_tr[col] = lbl.transform(df_tr[col])
-        df_te[col] = lbl.transform(df_te[col])
+        lbl.fit(df[col].map(str))
+        df_tr[col] = lbl.transform(df_tr[col].map(str))
+        df_te[col] = lbl.transform(df_te[col].map(str))
 
 

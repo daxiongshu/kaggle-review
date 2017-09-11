@@ -3,7 +3,8 @@ xgboost for pairwise ranking
 """
 import xgboost as xgb
 import numpy as np
-
+from utils.pypy_utils.utils import sort_value
+ 
 class xgb_model(object):
     
     def __init__(self,params):
@@ -13,8 +14,8 @@ class xgb_model(object):
         load_model=None,save_model=None,
         obj=None,feval=None):
         print(X.shape,y.shape)
-        num_round = self.params['num_round']
-        early_stopping_rounds = self.params['early_stopping_rounds']
+        num_round = self.params.get('num_round',100)
+        early_stopping_rounds = self.params.get('early_stopping_rounds',None)
         dtrain = xgb.DMatrix(X, y)
 
         if Xt is not None:
@@ -37,4 +38,6 @@ class xgb_model(object):
         return self.bst.predict(dtest)
 
     def feature_importance(self):
-        return self.bst.get_fscore()
+        fscore = self.bst.get_fscore()
+        feas = sort_value(fscore)
+        return [(fea,fscore[fea]) for fea in feas]        
