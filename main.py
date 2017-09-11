@@ -29,8 +29,12 @@ def main(_):
         from comps.wiki.run import run_sol
     elif FLAGS.comp == "eng_norm":
         from comps.eng_norm.run import run_sol
+    elif FLAGS.comp == "russian_norm":
+        from comps.russian_norm.run import run_sol
     elif FLAGS.comp == "caesars":
         from comps.caesars.run import run_sol
+    elif FLAGS.comp == "personal":
+        from comps.personal.run import run_sol
     else:
         print("Unknown competion %s"%FLAGS.comp)
         assert False

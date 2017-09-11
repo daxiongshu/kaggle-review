@@ -14,4 +14,12 @@ def rm_const_cols(df,bar=0.999):
         return df
     else:
         return df.drop(const,axis=1) 
-        
+
+def get_ymd(df,col,deli='-',order="ymd"):
+    def _parse_order(order):
+        return {i:c for c,i in enumerate(order)}
+    order_dic = _parse_order(order) 
+    df["year"] = df[col].apply(lambda x: x.split(deli)[order_dic['y']]).astype(int)
+    df["month"] = df[col].apply(lambda x: x.split(deli)[order_dic['m']]).astype(int)
+    df["day"] = df[col].apply(lambda x: x.split(deli)[order_dic['d']]).astype(int)
+

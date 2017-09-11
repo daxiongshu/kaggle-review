@@ -1,9 +1,11 @@
+comps/personal
 comps/zillow
 comps/mobike
 comps/carvana/carl
 comps/caesars
 comps/wiki
 comps/eng_norm
+comps/russian_norm
 *.npy
 *.pb
 *.p
