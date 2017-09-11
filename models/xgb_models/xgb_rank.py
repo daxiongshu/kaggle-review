@@ -3,7 +3,7 @@ xgboost for pairwise ranking
 """
 import xgboost as xgb
 import numpy as np
-
+from utils.pypy_utils.utils import sort_value
 class xgb_rank(object):
     
     def __init__(self,params):
@@ -21,7 +21,8 @@ class xgb_rank(object):
             dvalid.set_group(Xgt)
             watchlist = [(dtrain, 'train'), (dvalid, 'valid')]
             bst = xgb.train(self.params, dtrain, num_round, evals = watchlist,
-                early_stopping_rounds=early_stopping_rounds,verbose_eval=1,xgb_model=load_model)
+                early_stopping_rounds=early_stopping_rounds,verbose_eval=1,xgb_model=load_model,
+                maximize=True)
         else:
             watchlist = [(dtrain, 'train')]
             bst = xgb.train(self.params, dtrain, num_round, evals = watchlist,
