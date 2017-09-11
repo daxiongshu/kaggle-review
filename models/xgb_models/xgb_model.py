@@ -36,3 +36,5 @@ class xgb_model(object):
         dtest = xgb.DMatrix(Xt)
         return self.bst.predict(dtest)
 
+    def feature_importance(self):
+        return self.bst.get_fscore()

@@ -36,3 +36,5 @@ class xgb_rank(object):
         dtest.set_group(Xg)
         return self.bst.predict(dtest)
 
+    def feature_importance(self):
+        return self.bst.get_fscore()
