@@ -1,5 +1,15 @@
 from math import cos,log
 
+def read_fscore(name):
+    dic = {}
+    with open(name) as f:
+        for line in f:
+            xx = line.strip().split(',')
+            fea = xx[0].strip()[1:]
+            score = xx[1].strip()[:-1]       
+            dic[fea] = score
+    return dic     
+
 def logloss(y,yp):
     return -(y*log(yp)+(1-y)*log(1-yp))
 

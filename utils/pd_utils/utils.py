@@ -21,3 +21,5 @@ def get_ymd(df,col,deli='-',order="ymd"):
     df["month"] = df[col].apply(lambda x: x.split(deli)[order_dic['m']]).astype(int)
     df["day"] = df[col].apply(lambda x: x.split(deli)[order_dic['d']]).astype(int)
 
+def count_missing_per_row(df):
+    df['num_missing'] = df.isnull().sum(axis=1)
