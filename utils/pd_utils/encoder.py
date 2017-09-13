@@ -15,5 +15,5 @@ def lbl_encode(df_tr,df_te,cols=None,objonly=True):
         lbl.fit(df[col].map(str))
         df_tr[col] = lbl.transform(df_tr[col].map(str))
         df_te[col] = lbl.transform(df_te[col].map(str))
-    print(encoded)
+    print('lbl encode:',encoded)
 

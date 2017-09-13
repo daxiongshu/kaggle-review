@@ -7,7 +7,7 @@ def read_fscore(name):
             xx = line.strip().split(',')
             fea = xx[0].strip()[1:]
             score = xx[1].strip()[:-1]       
-            dic[fea] = score
+            dic[fea[1:-1]] = float(score)
     return dic     
 
 def logloss(y,yp):
