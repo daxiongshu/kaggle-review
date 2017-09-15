@@ -10,11 +10,6 @@ class BaseCnnModel(BaseModel):
         super().__init__(flags)
         tf.GraphKeys.FEATURE_MAPS = 'feature_maps'
 
-    def _build(self,inputs):
-        # build the self.pred tensor
-        raise NotImplementedError()
-
-
     def predict_lastconv(self,inputs, labels=None, activation="softmax"):
 
         # This function could be overwritten
