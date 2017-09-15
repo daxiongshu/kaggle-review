@@ -1,6 +1,20 @@
 import pandas as pd
 
+def impute(df,cols=None,mode="mean"):
+    print("impute %s ..."%mode)
+    if mode == "mean":
+        impute_mean(df,cols)
+    else:
+        print("unknown mode",mode)
+        assert 0
+
+def impute_mean(df,cols):
+    if cols is None:
+        cols = [i for i in df.columns.values if df[i].dtype!='object']
+    df[cols] = df[cols].fillna(df[cols].mean())
+
 def rm_const_cols(df,bar=0.999):
+    print("remove const cols ...")
     cols = df.columns.values
     const = []
     for col in cols:
@@ -14,6 +28,7 @@ def rm_const_cols(df,bar=0.999):
         df.drop(const,axis=1,inplace=True)
 
 def get_ymd(df,col,deli='-',order="ymd"):
+    print("get year month day ...")
     def _parse_order(order):
         return {i:c for c,i in enumerate(order)}
     order_dic = _parse_order(order) 
@@ -22,4 +37,11 @@ def get_ymd(df,col,deli='-',order="ymd"):
     df["day"] = df[col].apply(lambda x: x.split(deli)[order_dic['d']]).astype(int)
 
 def count_missing_per_row(df):
+    print("count missinv values per row ...")
     df['num_missing'] = df.isnull().sum(axis=1)
+
+if __name__ == "__main__":
+    s = pd.read_csv("utils/pd_utils/xx.csv")
+    print(s)
+    impute(s)
+    print(s)
