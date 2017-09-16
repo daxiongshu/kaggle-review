@@ -20,10 +20,14 @@ class SimpleAutoEncoder(BaseAutoEncoder):
         with tf.variable_scope(net_name):
             self._encoder("%s/encoder"%net_name)
             self._decoder("%s/decoder"%net_name)
+        if "predict" in self.flags.task:
+            self.logit = self.code
 
     def train(self):
         self.train_from_placeholder() # this will call _build()        
 
+    def predict(self):
+        self.predict_from_placeholder() # this will call _build()
     def _encoder(self,name):
         self.inputs = tf.placeholder(tf.float32, shape=(None,self.input_dim))
         self.code = self._fc_block(self.inputs, name, ['relu']*len(self.encode_layers), self.encode_layers)

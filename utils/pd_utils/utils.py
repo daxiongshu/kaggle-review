@@ -1,5 +1,28 @@
 import pandas as pd
 
+def random_batch_gen(df,batch_size):
+    B = batch_size
+    frac = B*1.0/df.shape[0]
+    print("run %d batches for 1 epoch"%(df.shape[0]//B))
+    for j in range(df.shape[0]//B):
+        x = df.sample(frac=frac).values
+        yield x
+
+def sequential_iterate_df(df,batch_size):
+    def _chunker(df, size):
+        return (df[pos:pos + size] for pos in range(0, df.shape[0], size))
+    for data in _chunker(df, batch_size):
+        yield data
+
+def rm_categorical_cols(df,cols=None):
+    print("rm categorical cols ...")
+    bad = None
+    if cols is None:
+        cols = df.columns.values
+    bad = [i for i in cols if df[i].dtype=='object']
+    print("categorical cols {}".format(bad))
+    df.drop(bad,axis=1,inplace=True)
+    
 def normalize(df,cols=None):
     print("normalize ...")
     if cols is None:

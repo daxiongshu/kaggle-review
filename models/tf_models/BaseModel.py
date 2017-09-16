@@ -505,10 +505,36 @@ labels))
             if self.flags.log_path:
                 summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
 
-    def _batch_gen(self):
+    def _batch_gen(self,sequential=False):
         raise NotImplementedError()
 
+    def predict_from_placeholder(self):
+        self._build()
+        self._get_summary()
+        with open(self.flags.pred_path,'w') as f:
+            pass
+        count = 0
+        with tf.Session() as sess:
+            self.sess = sess
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+            if self.flags.log_path and self.flags.visualize is not None:
+                summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
+            for batch in self._batch_gen(sequential=True):
+                x,_,epoch = batch
+                if self.flags.log_path and self.flags.visualize is not None:
+                    summary,pred = sess.run([self.summ_op,self.logit],feed_dict={self.inputs:x})
+                    summary_writer.add_summary(summary, count)
+                else:
+                    pred = sess.run(self.logit,feed_dict={self.inputs:x})
+                count+=1
+                if count%100 == 0:
+                    print_mem_time("Epoch %d Batch %d "%(epoch,count))
+                with open(self.flags.pred_path,'a') as f:
+                    pd.DataFrame(pred).to_csv(f, header=False,index=False, float_format='%.5f')
+
     def train_from_placeholder(self):
+
         labels = tf.placeholder(tf.float32, shape=(None,None)) 
         self._build()
         self._get_loss(labels)
@@ -517,7 +543,6 @@ labels))
 
         with tf.Session() as sess:
             self.sess = sess
-            start_time = time.time()
             sess.run(tf.global_variables_initializer())
             sess.run(tf.local_variables_initializer())
             if self.flags.log_path and self.flags.visualize is not None:
@@ -532,6 +557,8 @@ labels))
                     summary_writer.add_summary(summary, count)
                 else:
                     _,loss = sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y})
+                if count==0:
+                    print("First loss",loss)
                 count+=1
                 ave_loss = self._update_ave_loss(ave_loss,loss)
                 if count%100 == 0:
@@ -539,7 +566,6 @@ labels))
                 if epoch>self.epoch:
                     self._save()
                     self.epoch = epoch
-            self.epoch = self.flags.epochs
             self._save()
                  
     def _update_ave_loss(self,ave_loss,loss):
