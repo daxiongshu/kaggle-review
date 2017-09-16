@@ -1,5 +1,11 @@
 import pandas as pd
 
+def normalize(df,cols=None):
+    print("normalize ...")
+    if cols is None:
+        cols = [i for i in df.columns.values if df[i].dtype!='object']
+    df[cols] = (df[cols] - df[cols].mean())/df[cols].std()
+
 def impute(df,cols=None,mode="mean"):
     print("impute %s ..."%mode)
     if mode == "mean":

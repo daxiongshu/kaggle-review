@@ -201,8 +201,6 @@ class BaseCnnModel(BaseModel):
                 count+=1
                 print("Batch",count)
 
-    def _batch_gen(self):
-        raise NotImplementedError()
 
     def dense_block(self, net, name, ksizes, filters, activations, strides, batchnorm=None, padding=None):
         assert len(filters) == len(ksizes)

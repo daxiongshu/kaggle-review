@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 import time
-
+from utils.utils import print_mem_time
 class BaseModel(object):
     def __init__(self,flags):
         self.flags = flags
@@ -23,9 +23,18 @@ class BaseModel(object):
         tf.GraphKeys.GRADIENTS = "gradients"
         tf.GraphKeys.FEATURE_MAPS = "feature_maps"        
 
-    def _build(self,inputs):
+    def _build(self,inputs=None,labels=None):
         # build the self.pred tensor
         raise NotImplementedError()
+
+    def _get_l2_loss(self):
+        with tf.name_scope("L2_loss"):
+            if self.flags.lambdax:
+                lambdax = self.flags.lambdax
+            else:
+                lambdax = 0
+            self.l2loss = lambdax*tf.add_n(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+
 
     def _get_loss(self,labels):
         # build the self.loss tensor
@@ -39,14 +48,7 @@ class BaseModel(object):
                 #self.logit = tf.cast(self.logit, tf.float32)
                 self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logit, labels=
 labels))
-
-            with tf.name_scope("L2_loss"):
-                if self.flags.lambdax:
-                    lambdax = self.flags.lambdax
-                else:
-                    lambdax = 0
-                self.l2loss = lambdax*tf.add_n(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
-
+            self._get_l2_loss()
             with tf.name_scope("accuracy"):
                 y_label = tf.argmax(labels, 1)
                 yp_label = tf.argmax(self.logit, 1)
@@ -151,7 +153,7 @@ labels))
         for var, val in zip(tvars, tvars_vals):
             weights[var.name] = val
 
-        name = "%s/%s_%s_%s_%d.npy"%(self.flags.save_path, self.flags.comp, self.flags.run_name, self.flags.net, self.flags.pre_epochs + int(self.epoch))
+        name = "{}/{}_{}_{}_{}.npy".format(self.flags.save_path, self.flags.task, self.flags.run_name, self.flags.net, self.flags.pre_epochs + int(self.epoch))
         np.save(name, weights)
 
     def print_all_variables(self):
@@ -502,3 +504,46 @@ labels))
             start = time.time()
             if self.flags.log_path:
                 summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
+
+    def _batch_gen(self):
+        raise NotImplementedError()
+
+    def train_from_placeholder(self):
+        labels = tf.placeholder(tf.float32, shape=(None,None)) 
+        self._build()
+        self._get_loss(labels)
+        self._get_opt()
+        self._get_summary()
+
+        with tf.Session() as sess:
+            self.sess = sess
+            start_time = time.time()
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+            if self.flags.log_path and self.flags.visualize is not None:
+                summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
+            count = 0
+            ave_loss = 0
+            self.epoch = 0
+            for batch in self._batch_gen():
+                x,y,epoch = batch
+                if self.flags.log_path and self.flags.visualize is not None:
+                    summary,_,loss = sess.run([self.summ_op,self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y})
+                    summary_writer.add_summary(summary, count)
+                else:
+                    _,loss = sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y})
+                count+=1
+                ave_loss = self._update_ave_loss(ave_loss,loss)
+                if count%100 == 0:
+                    print_mem_time("Epoch %d Batch %d ave loss %.3f"%(epoch,count,ave_loss))
+                if epoch>self.epoch:
+                    self._save()
+                    self.epoch = epoch
+            self.epoch = self.flags.epochs
+            self._save()
+                 
+    def _update_ave_loss(self,ave_loss,loss):
+        if ave_loss == 0:
+            return loss
+        return ave_loss*0.99 + loss*0.01
+
