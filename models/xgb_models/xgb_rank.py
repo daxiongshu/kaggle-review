@@ -8,6 +8,7 @@ class xgb_rank(object):
     
     def __init__(self,params):
         self.params = params
+        self.bst = None
 
     def fit(self,X,y,Xg,Xt=None,yt=None,Xgt=None,load_model=None,save_model=None):
         print(X.shape,y.shape)
@@ -32,9 +33,12 @@ class xgb_rank(object):
             bst.save_model(save_model)            
         
 
-    def predict(self,Xt,Xg):
+    def predict(self,Xt,Xg,load_model=None):
+        print("load_model",load_model)
         dtest = xgb.DMatrix(Xt)
         dtest.set_group(Xg)
+        if load_model and self.bst is None:
+            self.bst = xgb.Booster(self.params,model_file=load_model)
         return self.bst.predict(dtest)
 
 
