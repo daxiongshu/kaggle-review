@@ -21,7 +21,8 @@ class BaseModel(object):
         tf.GraphKeys.REGULARIZATION_LOSSES = 'regularization_losses'
         tf.GraphKeys.SAVE_TENSORS = "save_tensors"
         tf.GraphKeys.GRADIENTS = "gradients"
-        tf.GraphKeys.FEATURE_MAPS = "feature_maps"        
+        tf.GraphKeys.FEATURE_MAPS = "feature_maps"
+        tf.GraphKeys.EMBEDDINGS = "embeddings"
 
     def _build(self,inputs=None,labels=None):
         # build the self.pred tensor
@@ -46,8 +47,7 @@ class BaseModel(object):
             with tf.name_scope("cross_entropy"):
                 labels = tf.cast(labels, tf.float32)
                 #self.logit = tf.cast(self.logit, tf.float32)
-                self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logit, labels=
-labels))
+                self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logit, labels=labels))
             self._get_l2_loss()
             with tf.name_scope("accuracy"):
                 y_label = tf.argmax(labels, 1)
@@ -72,10 +72,6 @@ labels))
                         tf.summary.histogram(name='pred%d'%cl, values=tf.slice(self.logit, [0,cl],[self.flags.batch_size, 1]), collections=[tf.GraphKeys.FEATURE_MAPS])
 
 
-    def _get_loss(self,labels):
-        # build the self.loss tensor
-        # This function could be overwritten
-        raise NotImplementedError()
 
     def _get_opt(self):
         # build the self.opt_op for training
@@ -126,6 +122,8 @@ labels))
         for i in tf.get_collection(tf.GraphKeys.IMAGES):
             tf.add_to_collection(summ_collection, i)
         for i in tf.get_collection(tf.GraphKeys.GRADIENTS):
+            tf.add_to_collection(summ_collection, i)
+        for i in tf.get_collection(tf.GraphKeys.EMBEDDINGS):
             tf.add_to_collection(summ_collection, i)
         self.summ_op = tf.summary.merge(tf.get_collection(summ_collection))
 

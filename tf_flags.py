@@ -59,7 +59,8 @@ if flags.FLAGS.comp == "instacart":
         flags.DEFINE_integer("dep_embed_size",None,"embedding size of department")
         flags.DEFINE_integer("ail_embed_size",None,"embedding size of aisle")
         flags.DEFINE_integer("max_seq_len",None,"maximum length of the sequence")
-
+if flags.FLAGS.comp == "personal":
+    flags.DEFINE_integer("window_size",None,"window size for rnn")
 #####################################################################
 
 FLAGS = flags.FLAGS

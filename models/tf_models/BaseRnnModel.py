@@ -5,6 +5,7 @@ import time
 from models.tf_models.BaseModel import BaseModel
 from utils.np_utils.nn_util import orthogonal 
 
+
 class BaseRnnModel(BaseModel):
 
     def __init__(self,flags):

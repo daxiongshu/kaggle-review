@@ -1,4 +1,20 @@
 from math import cos,log
+import pickle
+import os
+
+def load_pickle(data,name,default):
+    if data is not None:
+        return data
+        
+    if os.path.exists(name):
+        return pickle.load(open(name,'rb'))
+    else:
+        return default
+
+def save_pickle(data,name):
+        
+    if os.path.exists(name)==0:
+        pickle.dump(data,open(name,'wb'))
 
 def read_fscore(name):
     dic = {}
