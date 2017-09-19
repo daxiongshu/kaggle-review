@@ -1,5 +1,7 @@
 # Mobike solution lb 0.307 after removing leak 
 
+https://biendata.com/competition/mobike/
+
 Requirement:
 >1. python3
 >2. pypy
