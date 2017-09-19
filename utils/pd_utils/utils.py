@@ -8,6 +8,9 @@ def random_batch_gen(df,batch_size):
         x = df.sample(frac=frac).values
         yield x
 
+def series_equal(s1,s2):
+    return (s1==s2).all()
+
 def sequential_iterate_df(df,batch_size):
     def _chunker(df, size):
         return (df[pos:pos + size] for pos in range(0, df.shape[0], size))

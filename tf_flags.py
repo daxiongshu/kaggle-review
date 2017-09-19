@@ -6,7 +6,6 @@ flags = tf.app.flags
 flags.DEFINE_integer("start",None,"start point")
 flags.DEFINE_integer("sample_size",None,"sample size")
 flags.DEFINE_integer("num_units",0,"number of units")
-#flags.DEFINE_integer("seq_len",None,"length of the sequence")
 flags.DEFINE_integer("embedding_size",0,"embedding size")
 flags.DEFINE_string('opt', None, 'optimizer')
 flags.DEFINE_string('sol', None, 'id of the solution')
@@ -61,6 +60,7 @@ if flags.FLAGS.comp == "instacart":
         flags.DEFINE_integer("max_seq_len",None,"maximum length of the sequence")
 if flags.FLAGS.comp == "personal":
     flags.DEFINE_integer("window_size",None,"window size for rnn")
+    flags.DEFINE_integer("seq_len",None,"length of the sequence")
 #####################################################################
 
 FLAGS = flags.FLAGS

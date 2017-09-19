@@ -506,6 +506,9 @@ class BaseModel(object):
     def _batch_gen(self,sequential=False):
         raise NotImplementedError()
 
+    def _batch_gen_va(self):
+        raise NotImplementedError()
+
     def predict_from_placeholder(self):
         self._build()
         self._get_summary()
@@ -531,7 +534,7 @@ class BaseModel(object):
                 with open(self.flags.pred_path,'a') as f:
                     pd.DataFrame(pred).to_csv(f, header=False,index=False, float_format='%.5f')
 
-    def train_from_placeholder(self):
+    def train_from_placeholder(self, va=False):
 
         labels = tf.placeholder(tf.float32, shape=(None,None)) 
         self._build()
@@ -543,6 +546,7 @@ class BaseModel(object):
             self.sess = sess
             sess.run(tf.global_variables_initializer())
             sess.run(tf.local_variables_initializer())
+            self._restore()
             if self.flags.log_path and self.flags.visualize is not None:
                 summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
             count = 0
@@ -561,6 +565,14 @@ class BaseModel(object):
                 ave_loss = self._update_ave_loss(ave_loss,loss)
                 if count%100 == 0:
                     print_mem_time("Epoch %d Batch %d ave loss %.3f"%(epoch,count,ave_loss))
+                if va and count%100 == 0:
+                    losses = []
+                    #print()
+                    for x,y,_  in self._batch_gen_va():
+                        loss = sess.run(self.loss,feed_dict={self.inputs:x,labels:y})
+                        #print_mem_time("Validation loss %.3f"%(loss))
+                        losses.append(loss)
+                    print("Ave validation loss {}".format(np.mean(losses)))
                 if epoch>self.epoch:
                     self._save()
                     self.epoch = epoch
