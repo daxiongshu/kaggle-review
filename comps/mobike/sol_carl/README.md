@@ -11,5 +11,5 @@ Please place data in ../input with respect to ./kaggle-review/main.py
 
 please run this script from the root folder: ./kaggle-review
 
-#sh comps/mobike/sol_carl/run.sh
+# sh comps/mobike/sol_carl/run.sh
 
