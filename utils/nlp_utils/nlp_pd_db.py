@@ -20,6 +20,23 @@ class nlpDB(pd_DB):
         self.global_idf_dic = None
         self.clean_doc = None
 
+    def get_list(self,name,rows,text,field):
+        if name == "count" or name=="tf":
+            self.get_per_sample_words_count([text],field,1)
+            word_list = self.sample_words_count[text] 
+            if name == "tf":
+                word_list = tf(word_list)
+        elif name == "tfidf":
+            self.get_per_sample_tfidf([text],field,1)
+            word_list = self.sample_tfidf[text]
+
+        X = []
+        num_words = len(self.w2id)
+        for c in rows:
+            count = word_list[c]
+            X.append([count.get(self.id2w[i],0) for i in range(num_words)])
+        return X
+
     def get_clean_doc(self, texts, field, selected_words):
         if self.clean_doc is not None:
             return
@@ -46,7 +63,7 @@ class nlpDB(pd_DB):
                 self.clean_doc[text] = clean_lists
         #print(self.clean_doc[text][0])
 
-    def get_per_sample_tfidf(self, texts, field):
+    def get_per_sample_tfidf(self, texts, field, silent=0):
         """
         Each sample is a document.
         Input:
@@ -56,7 +73,7 @@ class nlpDB(pd_DB):
             return
 
         self.sample_tfidf = {}
-        self.get_per_sample_words_count(texts, field)
+        self.get_per_sample_words_count(texts, field, 1)
 
         name = "{}/global_idf_dic.p".format(self.flags.data_path)
         self.global_idf_dic = load_pickle(self.global_idf_dic,name,{})
@@ -73,14 +90,15 @@ class nlpDB(pd_DB):
                 tfidf_list = tf_idf(tf_list, idf_list,0)
                 pickle.dump(tfidf_list,open(name,'wb'))
                 self.sample_tfidf[text] = tfidf_list
-            print("\n{} sample tfidf done".format(text))
+            if silent==0:
+                print("\n{} sample tfidf done".format(text))
 
         name = "{}/global_idf_dic.p".format(self.flags.data_path)
         save_pickle(self.global_idf_dic,name)
 
 
 
-    def get_per_sample_words_count(self, texts, field):
+    def get_per_sample_words_count(self, texts, field, silent=0):
         """
         Each sample is a document.
         Input:
@@ -90,7 +108,7 @@ class nlpDB(pd_DB):
             return
 
         self.sample_words_count = {}
-        self.get_global_words_count(texts,[field])
+        self.get_global_words_count(texts,[field],1)
 
         for text in texts:
             name = "{}/sample_words_{}.p".format(self.flags.data_path,text)
@@ -109,10 +127,11 @@ class nlpDB(pd_DB):
                 
                 pickle.dump(word_counts,open(name,'wb'))
                 self.sample_words_count[text] = word_counts
-            print("\n{} sample words count done".format(text))
+            if silent == 0:
+                print("\n{} sample words count done".format(text))
 
 
-    def get_global_words_count(self,texts,fields=["Text"]):
+    def get_global_words_count(self,texts,fields=["Text"],silent=0):
         """
         build self.words_count: {"train":Counter, "test":Counter}
         Input:
@@ -142,9 +161,10 @@ class nlpDB(pd_DB):
                 pickle.dump(word_count,open(name,'wb'))
                 self.words_count[text] = word_count
 
-            print("\nnumber of different words in {}:".format(text),len(self.words_count[text]))
-            k = 10
-            print("Top {} most common words in {}".format(k,text), self.words_count[text].most_common(k))
+            if silent==0:
+                print("\nnumber of different words in {}:".format(text),len(self.words_count[text]))
+                k = 10
+                print("Top {} most common words in {}".format(k,text), self.words_count[text].most_common(k))
 
         name = "{}/stem_dic.p".format(self.flags.data_path)
         save_pickle(self.stem_dic,name)
@@ -154,7 +174,6 @@ class nlpDB(pd_DB):
             self.global_word_count = self.global_word_count + j
 
     def select_top_k_tfidf_words(self, texts, k=10, slack=8):
-        from random import sample
         name = "{}/top{}-{}_tfidf_words.p".format(self.flags.data_path,k,slack)
         selected = load_pickle(None,name,set())
         if len(selected):

@@ -34,8 +34,8 @@ def ave(x):
         return 0
     return sum(x)*1.0/len(x)
 
-def sort_value(dic):
-    return sorted(dic, key=dic.get, reverse=True)
+def sort_value(dic,descending=True):
+    return sorted(dic, key=dic.get, reverse=descending)
 
 def geo_distance(coord1,coord2):
     lat1,lon1 = coord1

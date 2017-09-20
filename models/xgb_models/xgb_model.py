@@ -5,7 +5,7 @@ import xgboost as xgb
 import numpy as np
 from utils.pypy_utils.utils import sort_value
  
-class xgb_model(object):
+class my_xgb(object):
     
     def __init__(self,params):
         self.params = params
@@ -14,6 +14,7 @@ class xgb_model(object):
         load_model=None,save_model=None,
         obj=None,feval=None):
         print(X.shape,y.shape)
+
         num_round = self.params.get('num_round',100)
         early_stopping_rounds = self.params.get('early_stopping_rounds',None)
         dtrain = xgb.DMatrix(X, y)
