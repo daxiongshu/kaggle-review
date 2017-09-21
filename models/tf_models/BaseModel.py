@@ -36,6 +36,17 @@ class BaseModel(object):
                 lambdax = 0
             self.l2loss = lambdax*tf.add_n(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
 
+    def _get_embedding(self, layer_name, inputs, v,m,reuse=False):
+        """
+            V: vocabulary size
+            M: embedding sze
+        """
+        with tf.variable_scope(layer_name.split('/')[-1], reuse=reuse):
+            w = self._get_variable(layer_name, name='w', shape=[v, m])
+            c = tf.zeros([1,m])
+            w = tf.concat([c,w],axis=0)
+            x = tf.nn.embedding_lookup(w, inputs, name='word_vector')  # (N, T, M) or (N, M)
+            return x    
 
     def _get_loss(self,labels):
         # build the self.loss tensor
@@ -509,9 +520,11 @@ class BaseModel(object):
     def _batch_gen_va(self):
         raise NotImplementedError()
 
-    def predict_from_placeholder(self):
+    def predict_from_placeholder(self,activation=None):
         self._build()
         self._get_summary()
+        if activation is not None:
+            self.logit = self._activate(self.logit,activation)
         with open(self.flags.pred_path,'w') as f:
             pass
         count = 0
@@ -529,7 +542,7 @@ class BaseModel(object):
                 else:
                     pred = sess.run(self.logit,feed_dict={self.inputs:x})
                 count+=1
-                if count%100 == 0:
+                if count%self.flags.verbosity == 0:
                     print_mem_time("Epoch %d Batch %d "%(epoch,count))
                 with open(self.flags.pred_path,'a') as f:
                     pd.DataFrame(pred).to_csv(f, header=False,index=False, float_format='%.5f')
@@ -541,6 +554,7 @@ class BaseModel(object):
         self._get_loss(labels)
         self._get_opt()
         self._get_summary()
+        ve = self.flags.verbosity
 
         with tf.Session() as sess:
             self.sess = sess
@@ -555,21 +569,21 @@ class BaseModel(object):
             for batch in self._batch_gen():
                 x,y,epoch = batch
                 if self.flags.log_path and self.flags.visualize is not None:
-                    summary,_,loss = sess.run([self.summ_op,self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y})
+                    summary,_,loss = sess.run([self.summ_op,self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y,self.is_training:1})
                     summary_writer.add_summary(summary, count)
                 else:
-                    _,loss = sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y})
+                    _,loss = sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y,self.is_training:1})
                 if count==0:
                     print("First loss",loss)
                 count+=1
                 ave_loss = self._update_ave_loss(ave_loss,loss)
-                if count%100 == 0:
+                if count%ve == 0:
                     print_mem_time("Epoch %d Batch %d ave loss %.3f"%(epoch,count,ave_loss))
-                if va and count%100 == 0:
+                if va and count%ve == 0:
                     losses = []
                     #print()
                     for x,y,_  in self._batch_gen_va():
-                        loss = sess.run(self.loss,feed_dict={self.inputs:x,labels:y})
+                        loss = sess.run(self.loss,feed_dict={self.inputs:x,labels:y,self.is_training:0})
                         #print_mem_time("Validation loss %.3f"%(loss))
                         losses.append(loss)
                     print("Ave validation loss {}".format(np.mean(losses)))
@@ -583,3 +597,5 @@ class BaseModel(object):
             return loss
         return ave_loss*0.99 + loss*0.01
 
+    def _dropout(self,x,is_training):
+        return tf.cond(is_training, lambda: tf.nn.dropout(x, self.flags.keep_prob), lambda: x)

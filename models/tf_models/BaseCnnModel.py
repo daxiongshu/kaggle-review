@@ -178,7 +178,7 @@ class BaseCnnModel(BaseModel):
                         green - VGG_MEAN[1],
                         red - VGG_MEAN[2]])
         return bgr
-
+    """
     def predict_from_placeholder(self, activation=None):
         n,h,w,c = self.flags.batch_size,self.flags.height,self.flags.width,self.flags.color
         inputs = tf.placeholder(dtype=tf.float32,shape=[n,h,w,c])
@@ -200,7 +200,7 @@ class BaseCnnModel(BaseModel):
                 summary_writer.add_summary(summary, count)
                 count+=1
                 print("Batch",count)
-
+    """
 
     def dense_block(self, net, name, ksizes, filters, activations, strides, batchnorm=None, padding=None):
         assert len(filters) == len(ksizes)

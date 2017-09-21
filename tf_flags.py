@@ -47,6 +47,7 @@ flags.DEFINE_integer("height",None,"height of image to resize to")
 flags.DEFINE_string('add_paths', None, 'additional input paths')
 flags.DEFINE_string('add_record_paths', None, 'additional records')
 flags.DEFINE_float("momentum",0.0,"momentum")
+flags.DEFINE_float("verbosity",100,"verbosity")
 #####################################################################
 
 #####################################################################
