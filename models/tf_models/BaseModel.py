@@ -13,6 +13,7 @@ class BaseModel(object):
         self.loaded_weights = {}
         self._load()
         self._add_graph_keys()
+        self.is_training = tf.placeholder(tf.bool)        
 
     def _add_graph_keys(self):
         tf.GraphKeys.IMAGES = 'images'

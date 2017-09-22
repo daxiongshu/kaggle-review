@@ -62,6 +62,7 @@ if flags.FLAGS.comp == "instacart":
 if flags.FLAGS.comp == "personal":
     flags.DEFINE_integer("window_size",None,"window size for rnn")
     flags.DEFINE_integer("seq_len",None,"length of the sequence")
+    flags.DEFINE_integer("d2v_size",None,"d2v_size")
 #####################################################################
 
 FLAGS = flags.FLAGS
