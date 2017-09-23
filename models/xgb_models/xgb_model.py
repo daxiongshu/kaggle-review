@@ -5,7 +5,7 @@ import xgboost as xgb
 import numpy as np
 from utils.pypy_utils.utils import sort_value
  
-class my_xgb(object):
+class xgb_model(object):
     
     def __init__(self,params):
         self.params = params
