@@ -19,6 +19,9 @@ def print_mem_time(tag):
     except:
         print()
 
+def get_size(path):
+    return os.path.getsize(path)/1024.0/1024.0/1024.0
+
 def split(flags):
     if os.path.exists(flags.split_path):
         return np.load(flags.split_path).item()

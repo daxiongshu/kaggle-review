@@ -9,7 +9,7 @@ import gc
 from utils.utils import print_mem_time 
 
 class pd_DB(object):
-    def __init__(self,flags,tables=[],prob_dtype=False):
+    def _build(self,flags,tables=[],prob_dtype=False):
         """
             Input:
               tables: a list of namedtuples,
