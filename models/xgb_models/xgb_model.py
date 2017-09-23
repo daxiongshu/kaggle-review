@@ -32,7 +32,11 @@ class xgb_model(object):
         self.bst = bst
         if save_model is not None:
             bst.save_model(save_model)            
-        
+       
+        fscore = self.feature_importance()
+        print("Feature Importance:")
+        for i in fscore:
+            print(i) 
 
     def predict(self,Xt):
         dtest = xgb.DMatrix(Xt)
