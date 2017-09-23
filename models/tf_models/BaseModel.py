@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import time
 from utils.utils import print_mem_time
+import os
+
 class BaseModel(object):
     def __init__(self,flags):
         self.flags = flags
@@ -36,6 +38,31 @@ class BaseModel(object):
             else:
                 lambdax = 0
             self.l2loss = lambdax*tf.add_n(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+
+    def show_embedding(self,name,save_model="model.ckpt",meta_path='metadata.tsv'):
+        self._build()
+        self._write_meta()
+        from tensorflow.contrib.tensorboard.plugins import projector
+        # Use the same LOG_DIR where you stored your checkpoint.
+        with tf.Session() as sess:
+            self.sess = sess
+            sess.run(tf.global_variables_initializer())
+            sess.run(tf.local_variables_initializer())
+            summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
+            saver = tf.train.Saver()
+            saver.save(sess, os.path.join(self.flags.log_path, save_model), 0)
+        # Format: tensorflow/contrib/tensorboard/plugins/projector/projector_config.proto
+        config = projector.ProjectorConfig()
+        # You can add multiple embeddings. Here we add only one.
+        embedding = config.embeddings.add()
+        embedding.tensor_name = name
+        # Link this tensor to its metadata file (e.g. labels).
+        embedding.metadata_path = os.path.join(self.flags.log_path, meta_path)
+        # Saves a configuration file that TensorBoard will read during startup.
+        projector.visualize_embeddings(summary_writer, config)
+
+    def _write_meta(self):
+        raise NotImplementedError()
 
     def _get_embedding(self, layer_name, inputs, v,m,reuse=False):
         """
