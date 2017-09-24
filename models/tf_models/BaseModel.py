@@ -630,5 +630,5 @@ class BaseModel(object):
             return loss
         return ave_loss*0.99 + loss*0.01
 
-    def _dropout(self,x,is_training):
-        return tf.cond(is_training, lambda: tf.nn.dropout(x, self.flags.keep_prob), lambda: x)
+    def _dropout(self,x):
+        return tf.cond(self.is_training, lambda: tf.nn.dropout(x, self.flags.keep_prob), lambda: x)
