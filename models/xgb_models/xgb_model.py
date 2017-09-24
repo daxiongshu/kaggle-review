@@ -12,7 +12,7 @@ class xgb_model(object):
 
     def fit(self,X,y,Xt=None,yt=None,
         load_model=None,save_model=None,
-        obj=None,feval=None):
+        obj=None,feval=None,print_fscore=True):
         print(X.shape,y.shape)
 
         num_round = self.params.get('num_round',100)
@@ -34,9 +34,10 @@ class xgb_model(object):
             bst.save_model(save_model)            
        
         fscore = self.feature_importance()
-        print("Feature Importance:")
-        for i in fscore:
-            print(i) 
+        if print_fscore:
+            print("Feature Importance:")
+            for i in fscore:
+                print(i) 
 
     def predict(self,Xt):
         dtest = xgb.DMatrix(Xt)

@@ -29,7 +29,8 @@ class nlpDB(pd_DB):
         elif name == "tfidf":
             self.get_per_sample_tfidf([text],field,1)
             word_list = self.sample_tfidf[text]
-
+        if rows is None:
+            rows = list(range(len(word_list)))
         X = []
         num_words = len(self.w2id)
         for c in rows:
