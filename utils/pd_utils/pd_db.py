@@ -77,3 +77,6 @@ class pd_DB(object):
     def snoop(self):
         raise NotImplementedError()
 
+    def clear(self):
+        del self.data
+        gc.collect()
