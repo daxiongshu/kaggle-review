@@ -316,7 +316,8 @@ class BaseModel(object):
                         self.epoch = count//self.flags.total_samples
                         print("Epochs: %d Training Loss: %.4f %s: %.4f Time: %.3f s "%(self.epoch, ave_loss, 
                             self.flags.metric, ave_acc, duration))
-                        self._save()
+                        if self.epoch%self.flags.save_epochs == 0:
+                            self._save()
                     if count%(self.flags.batch_size*10) == 0:
                         duration = time.time() - start_time
                         print("Samples: %d Training Loss: %.4f %s: %.4f Time: %.3f s "%(count, ave_loss, 
@@ -542,10 +543,13 @@ class BaseModel(object):
             if self.flags.log_path:
                 summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
 
-    def _batch_gen(self,sequential=False):
+    def _batch_gen(self):
         raise NotImplementedError()
 
     def _batch_gen_va(self):
+        raise NotImplementedError()
+
+    def _batch_gen_test(self):
         raise NotImplementedError()
 
     def predict_from_placeholder(self,activation=None):
@@ -562,7 +566,7 @@ class BaseModel(object):
             sess.run(tf.local_variables_initializer())
             if self.flags.log_path and self.flags.visualize is not None:
                 summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
-            for batch in self._batch_gen(sequential=True):
+            for batch in self._batch_gen_test():
                 x,_,epoch = batch
                 if self.flags.log_path and self.flags.visualize is not None:
                     summary,pred = sess.run([self.summ_op,self.logit],feed_dict={self.inputs:x})
@@ -616,8 +620,9 @@ class BaseModel(object):
                         losses.append(loss)
                     print("Ave validation loss {}".format(np.mean(losses)))
                 if epoch>self.epoch:
-                    self._save()
                     self.epoch = epoch
+                    if epoch%self.flags.save_epochs==0:
+                        self._save()
             self._save()
                  
     def _update_ave_loss(self,ave_loss,loss):
