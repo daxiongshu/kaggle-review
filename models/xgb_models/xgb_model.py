@@ -9,6 +9,7 @@ class xgb_model(object):
     
     def __init__(self,params):
         self.params = params
+        self.bst = None
 
     def fit(self,X,y,Xt=None,yt=None,
         load_model=None,save_model=None,
@@ -39,8 +40,10 @@ class xgb_model(object):
             for i in fscore:
                 print(i) 
 
-    def predict(self,Xt):
+    def predict(self,Xt,load_model=None):
         dtest = xgb.DMatrix(Xt)
+        if load_model and self.bst is None:
+            self.bst = xgb.Booster(self.params,model_file=load_model)
         return self.bst.predict(dtest)
 
     def feature_importance(self):

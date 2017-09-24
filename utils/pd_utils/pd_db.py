@@ -63,8 +63,10 @@ class pd_DB(object):
                     dtype[col] = np.int16
                 elif 0<=mi and mx<65535:
                     dtype[col] = np.uint16
-                else:
+                elif -2147483648<mi and mx< 2147483648:
                     dtype[col] = np.int32
+                else:
+                    dtype[col] = np.int64
             else:
                 dtype[col] = data[col].dtype
         print("\n {} {} \n".format(fname,dtype))
