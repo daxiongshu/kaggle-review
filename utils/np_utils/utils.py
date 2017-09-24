@@ -1,4 +1,10 @@
 import numpy as np
+
+def cross_entropy(y,yp):
+    yp[yp>0.99999] = 0.99999
+    yp[yp<1e-5] = 1e-5
+    return np.mean(-np.log(yp[range(yp.shape[0]),y.astype(int)]))
+
 def confusion_matrix(rater_a, rater_b, min_rating=None, max_rating=None):
     """
     Returns the confusion matrix between rater's ratings
