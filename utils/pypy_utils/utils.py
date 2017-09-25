@@ -65,3 +65,33 @@ def apk(actual, predicted, k=3):
             score += num_hits / (i+1.0)
     return score / min(len(actual), k)
 
+def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False):
+    print("csv2ffm",out)
+    if os.path.exists(out):
+        return fea_dic
+    f = open(inx)
+    head = f.readline().strip()
+    fields = head.split(',')
+    f.close()
+    fields = [i for i in fields if i not in [id_col,y_col]]
+    field_dic = {i:c for c,i in enumerate(fields)}
+
+    fo = open(out,'w')
+    with open(inx) as f:
+        for c,row in enumerate(csv.DictReader(f)):
+            line = [row.get(y_col,'0')]
+            for field in fields:
+                val = "%s_%s"%(field,row[field])
+                if val not in fea_dic:
+                    if update:
+                        fea_dic[val] = len(fea_dic)+1
+                m = field_dic[field]
+                n = fea_dic.get(val,'0')
+                line.append("%s:%s:1"%(m,n))
+            line = " ".join(line)
+            fo.write(line+'\n')
+            if c>0 and c%10000000 ==  0:
+                print(c,out,'written')
+    fo.close()
+    return fea_dic
+

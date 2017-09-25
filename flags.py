@@ -34,6 +34,7 @@ def get_parser():
     parser.add_argument('--pred_path',help='path of prediction files')
     parser.add_argument('--record_path',help='path of tf record')
     parser.add_argument('--input_path',help='input path')
+    parser.add_argument('--data_path',help='input path')
     parser.add_argument("--width",help="width of image to resize to")
     parser.add_argument("--height",help="height of image to resize to")
     parser.add_argument('--add_paths',help='additional input paths')
