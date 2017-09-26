@@ -9,7 +9,7 @@ def tf_idf(tf_dic_list, idf_dic_list, silent=1):
         print("tf idf ...")
     tf_idf_dic_list = [] # [{word:tf_idf} for each sample]
     for tf_dic,idf_dic in zip(tf_dic_list,idf_dic_list):
-        tf_idf_dic = {i:tf_dic[i]*idf_dic[i] for i in tf_dic}
+        tf_idf_dic = {i:tf_dic[i]*idf_dic.get(i,0) for i in tf_dic}
         tf_idf_dic_list.append(tf_idf_dic)
     return tf_idf_dic_list   
 

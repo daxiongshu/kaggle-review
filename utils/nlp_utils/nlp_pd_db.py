@@ -12,13 +12,15 @@ from utils.pypy_utils.utils import load_pickle,save_pickle,sort_value
 
 class nlpDB(pd_DB):
 
-    def __init__(self):   
+    def __init__(self,noise_texts=[]):   
         self.stem_dic = None
+        self.sample_tf = None
         self.sample_tfidf = None
         self.sample_words_count = None
         self.words_count = None
         self.global_idf_dic = None
         self.clean_doc = None
+        self.noise_texts = noise_texts
 
     def get_list(self,name,rows,text,field):
         if name == "count" or name=="tf":
@@ -43,11 +45,17 @@ class nlpDB(pd_DB):
             return
 
         self.clean_doc = {}
+
+        name = "{}/stem_dic.p".format(self.flags.data_path)
+        self.stem_dic = load_pickle(self.stem_dic,name,{})
+        assert len(self.stem_dic)
+
         for text in texts:
             name = "{}/clean_doc_{}.p".format(self.flags.data_path,text)
             if os.path.exists(name):
                 self.clean_doc[text] = pickle.load(open(name,'rb'))
             else:
+                print("gen",name)
                 word_lists = [] # list of lists, each item is a list of words for each sample
                 df_per_sample_word_lists(self.data[text],field,word_lists) 
                 # this function is in place.
@@ -74,29 +82,64 @@ class nlpDB(pd_DB):
             return
 
         self.sample_tfidf = {}
-        self.get_per_sample_words_count(texts, field, 1)
+        self.get_per_sample_tf(texts, field, 1)
 
         name = "{}/global_idf_dic.p".format(self.flags.data_path)
         self.global_idf_dic = load_pickle(self.global_idf_dic,name,{})
+        if len(self.global_idf_dic)==0:
+            print("gen",name)
+            all_tf_list = []
+            for text in texts:
+                if text not in self.noise_texts:
+                    all_tf_list.extend(self.sample_tf[text])
+            #idf_list = idf(all_tf_list,self.global_idf_dic,0)
+            save_pickle(self.global_idf_dic,name)
 
         for text in texts:
             name = "{}/sample_tfidf_{}.p".format(self.flags.data_path,text)
-            if text not in self.global_idf_dic:
-                self.global_idf_dic[text] = {}
             if os.path.exists(name):
                 self.sample_tfidf[text] = pickle.load(open(name,'rb'))
             else:
-                tf_list = tf(self.sample_words_count[text],0)
-                idf_list = idf(tf_list,self.global_idf_dic[text],0)
+                print("gen",name)
+                tf_list = self.sample_tf[text]
+                idf_list = self.get_idf_list(tf_list)
                 tfidf_list = tf_idf(tf_list, idf_list,0)
                 pickle.dump(tfidf_list,open(name,'wb'))
                 self.sample_tfidf[text] = tfidf_list
             if silent==0:
                 print("\n{} sample tfidf done".format(text))
 
-        name = "{}/global_idf_dic.p".format(self.flags.data_path)
-        save_pickle(self.global_idf_dic,name)
+    def get_idf_list(self,tf_list):
+        idf_dic = self.global_idf_dic
+        idf_list = []
+        for tf_dic in tf_list:
+            idf = {w:idf_dic.get(w,0) for w in tf_dic}
+            idf_list.append(idf)
+        return idf_list
 
+    def get_per_sample_tf(self, texts, field, silent=0):
+        """
+        Each sample is a document.
+        Input:
+            texts: ["train","text"]
+        """
+        if self.sample_tf is not None:
+            return
+
+        self.sample_tf = {}
+        self.get_per_sample_words_count(texts, field, 1)
+
+        for text in texts:
+            name = "{}/sample_tf_{}.p".format(self.flags.data_path,text)
+            if os.path.exists(name):
+                self.sample_tf[text] = pickle.load(open(name,'rb'))
+            else:
+                print("gen",name)
+                tf_list = tf(self.sample_words_count[text],0)
+                pickle.dump(tf_list,open(name,'wb'))
+                self.sample_tf[text] = tf_list
+            if silent==0:
+                print("\n{} sample tf done".format(text))
 
 
     def get_per_sample_words_count(self, texts, field, silent=0):
@@ -116,6 +159,7 @@ class nlpDB(pd_DB):
             if os.path.exists(name):
                 self.sample_words_count[text] = pickle.load(open(name,'rb'))
             else:
+                print("gen",name)
                 word_lists = [] # list of lists, each item is a list of words for each sample
                 df_per_sample_word_lists(self.data[text],field,word_lists) 
                 # this function is in place.
@@ -140,7 +184,7 @@ class nlpDB(pd_DB):
         """
         if self.words_count is not None:
             return
-
+        
         self.words_count = {}
         name = "{}/stem_dic.p".format(self.flags.data_path)
         self.stem_dic = load_pickle(self.stem_dic,name,{})
@@ -150,6 +194,7 @@ class nlpDB(pd_DB):
             if os.path.exists(name):
             	self.words_count[text] = pickle.load(open(name,'rb'))
             else:
+                print("gen",name)
                 word_list = []
                 df_global_word_container(self.data[text],fields,word_list) 
                 # global word container means this is for the entire dataset, not per sample
@@ -174,12 +219,18 @@ class nlpDB(pd_DB):
         for i,j in self.words_count.items():
             self.global_word_count = self.global_word_count + j
 
-    def select_top_k_tfidf_words(self, texts, k=10, slack=8):
+    def select_top_k_tfidf_words(self, texts, field, k=10, slack=8):
         name = "{}/top{}-{}_tfidf_words.p".format(self.flags.data_path,k,slack)
         selected = load_pickle(None,name,set())
         if len(selected):
             return selected
-        self.get_per_sample_tfidf(['training_text','test_text'],"Text")
+        print("gen",name)
+
+        name = "{}/stem_dic.p".format(self.flags.data_path)
+        self.stem_dic = load_pickle(self.stem_dic,name,{})
+        assert len(self.stem_dic)
+
+        self.get_per_sample_tfidf(texts,field)
         for text in texts:
             data = self.sample_tfidf[text]
             for c,tfidf in enumerate(data):
