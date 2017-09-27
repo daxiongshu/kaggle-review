@@ -31,7 +31,7 @@ class nlpDB(pd_DB):
         elif name == "tfidf":
             self.get_per_sample_tfidf([text],field,1)
             word_list = self.sample_tfidf[text]
-        if rows is None:
+        if isinstance(rows,list)==False:
             rows = list(range(len(word_list)))
         X = []
         num_words = len(self.w2id)
@@ -219,6 +219,31 @@ class nlpDB(pd_DB):
         for i,j in self.words_count.items():
             self.global_word_count = self.global_word_count + j
 
+    def select_top_k_count_words(self, texts, field, k=10, slack=8):
+        name = "{}/top{}-{}_count_words.p".format(self.flags.data_path,k,slack)
+        selected = load_pickle(None,name,set())
+        if len(selected):
+            return selected
+        print("gen",name)
+
+        name = "{}/stem_dic.p".format(self.flags.data_path)
+        self.stem_dic = load_pickle(self.stem_dic,name,{})
+        assert len(self.stem_dic)
+
+        self.get_per_sample_words_count(texts,field)
+        for text in texts:
+            data = self.sample_words_count[text]
+            for c,tfidf in enumerate(data):
+                topk = sort_value(tfidf)[:k+slack]
+                topk = set([i for i in topk if len(i)>2])
+                selected = selected.union(topk)
+                if c>0 and c%1000 == 0:
+                    print("{} documents done, sample {}, num {}".format(c,topk,len(selected)))
+        print("num of selected key words",len(selected))
+        name = "{}/top{}-{}_count_words.p".format(self.flags.data_path,k,slack)
+        save_pickle(selected,name)
+        return selected
+
     def select_top_k_tfidf_words(self, texts, field, k=10, slack=8):
         name = "{}/top{}-{}_tfidf_words.p".format(self.flags.data_path,k,slack)
         selected = load_pickle(None,name,set())
@@ -239,7 +264,7 @@ class nlpDB(pd_DB):
                 selected = selected.union(topk)
                 if c>0 and c%1000 == 0:
                     print("{} documents done, sample {}, num {}".format(c,topk,len(selected)))
-        print(len(selected))
+        print("num of selected key words",len(selected))
         name = "{}/top{}-{}_tfidf_words.p".format(self.flags.data_path,k,slack)
         save_pickle(selected,name)
         return selected

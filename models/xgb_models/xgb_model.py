@@ -19,17 +19,17 @@ class xgb_model(object):
         num_round = self.params.get('num_round',100)
         early_stopping_rounds = self.params.get('early_stopping_rounds',None)
         dtrain = xgb.DMatrix(X, y)
-
+        vb = self.params.get('verbose_eval',1)
         if Xt is not None:
             dvalid = xgb.DMatrix(Xt, yt)
             watchlist = [(dtrain, 'train'), (dvalid, 'valid')]
             bst = xgb.train(self.params, dtrain, num_round, evals = watchlist,
-                early_stopping_rounds=early_stopping_rounds,verbose_eval=1,
+                early_stopping_rounds=early_stopping_rounds,verbose_eval=vb,
                 xgb_model=load_model,obj=obj,feval=feval)
         else:
             watchlist = [(dtrain, 'train')]
             bst = xgb.train(self.params, dtrain, num_round, evals = watchlist,
-                verbose_eval=1,xgb_model=load_model,obj=obj,feval=feval)
+                verbose_eval=vb,xgb_model=load_model,obj=obj,feval=feval)
         self.bst = bst
         if save_model is not None:
             bst.save_model(save_model)            
