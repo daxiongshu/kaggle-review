@@ -1,4 +1,4 @@
-# Mobike solution lb 0.307 after removing leak 
+# Mobike 14th solution lb 0.30269 final
 
 https://biendata.com/competition/mobike/
 
