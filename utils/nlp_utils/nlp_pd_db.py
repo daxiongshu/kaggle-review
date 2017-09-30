@@ -12,7 +12,8 @@ from utils.pypy_utils.utils import load_pickle,save_pickle,sort_value
 
 class nlpDB(pd_DB):
 
-    def __init__(self,noise_texts=[]):   
+    def __init__(self,name,noise_texts=[]):
+        self.name = name
         self.stem_dic = None
         self.sample_tf = None
         self.sample_tfidf = None
@@ -46,12 +47,12 @@ class nlpDB(pd_DB):
 
         self.clean_doc = {}
 
-        name = "{}/stem_dic.p".format(self.flags.data_path)
+        name = "{}/{}_stem_dic.p".format(self.flags.data_path,self.name)
         self.stem_dic = load_pickle(self.stem_dic,name,{})
         assert len(self.stem_dic)
 
         for text in texts:
-            name = "{}/clean_doc_{}.p".format(self.flags.data_path,text)
+            name = "{}/{}_clean_doc_{}.p".format(self.flags.data_path,text,self.name)
             if os.path.exists(name):
                 self.clean_doc[text] = pickle.load(open(name,'rb'))
             else:
@@ -84,7 +85,7 @@ class nlpDB(pd_DB):
         self.sample_tfidf = {}
         self.get_per_sample_tf(texts, field, 1)
 
-        name = "{}/global_idf_dic.p".format(self.flags.data_path)
+        name = "{}/{}_global_idf_dic.p".format(self.flags.data_path,self.name)
         self.global_idf_dic = load_pickle(self.global_idf_dic,name,{})
         if len(self.global_idf_dic)==0:
             print("gen",name)
@@ -96,7 +97,7 @@ class nlpDB(pd_DB):
             save_pickle(self.global_idf_dic,name)
 
         for text in texts:
-            name = "{}/sample_tfidf_{}.p".format(self.flags.data_path,text)
+            name = "{}/{}_sample_tfidf_{}.p".format(self.flags.data_path,self.name,text)
             if os.path.exists(name):
                 self.sample_tfidf[text] = pickle.load(open(name,'rb'))
             else:
@@ -130,7 +131,7 @@ class nlpDB(pd_DB):
         self.get_per_sample_words_count(texts, field, 1)
 
         for text in texts:
-            name = "{}/sample_tf_{}.p".format(self.flags.data_path,text)
+            name = "{}/{}_sample_tf_{}.p".format(self.flags.data_path,self.name,text)
             if os.path.exists(name):
                 self.sample_tf[text] = pickle.load(open(name,'rb'))
             else:
@@ -155,7 +156,7 @@ class nlpDB(pd_DB):
         self.get_global_words_count(texts,[field],1)
 
         for text in texts:
-            name = "{}/sample_words_{}.p".format(self.flags.data_path,text)
+            name = "{}/{}_sample_count_{}.p".format(self.flags.data_path,self.name,text)
             if os.path.exists(name):
                 self.sample_words_count[text] = pickle.load(open(name,'rb'))
             else:
@@ -186,11 +187,11 @@ class nlpDB(pd_DB):
             return
         
         self.words_count = {}
-        name = "{}/stem_dic.p".format(self.flags.data_path)
+        name = "{}/{}_stem_dic.p".format(self.flags.data_path,self.name)
         self.stem_dic = load_pickle(self.stem_dic,name,{})
 
         for text in texts:
-            name = "{}/words_in_{}.p".format(self.flags.data_path,text)
+            name = "{}/{}_total_count_{}.p".format(self.flags.data_path,self.name,text)
             if os.path.exists(name):
             	self.words_count[text] = pickle.load(open(name,'rb'))
             else:
@@ -212,7 +213,7 @@ class nlpDB(pd_DB):
                 k = 10
                 print("Top {} most common words in {}".format(k,text), self.words_count[text].most_common(k))
 
-        name = "{}/stem_dic.p".format(self.flags.data_path)
+        name = "{}/{}_stem_dic.p".format(self.flags.data_path,self.name)
         save_pickle(self.stem_dic,name)
 
         self.global_word_count = Counter()
@@ -220,13 +221,13 @@ class nlpDB(pd_DB):
             self.global_word_count = self.global_word_count + j
 
     def select_top_k_count_words(self, texts, field, k=10, slack=8):
-        name = "{}/top{}-{}_count_words.p".format(self.flags.data_path,k,slack)
+        name = "{}/{}_top{}-{}_count_words.p".format(self.flags.data_path,self.name,k,slack)
         selected = load_pickle(None,name,set())
         if len(selected):
             return selected
         print("gen",name)
 
-        name = "{}/stem_dic.p".format(self.flags.data_path)
+        name = "{}/{}_stem_dic.p".format(self.flags.data_path,self.name)
         self.stem_dic = load_pickle(self.stem_dic,name,{})
         assert len(self.stem_dic)
 
@@ -240,18 +241,18 @@ class nlpDB(pd_DB):
                 if c>0 and c%1000 == 0:
                     print("{} documents done, sample {}, num {}".format(c,topk,len(selected)))
         print("num of selected key words",len(selected))
-        name = "{}/top{}-{}_count_words.p".format(self.flags.data_path,k,slack)
+        name = "{}/{}_top{}-{}_count_words.p".format(self.flags.data_path,self.name,k,slack)
         save_pickle(selected,name)
         return selected
 
     def select_top_k_tfidf_words(self, texts, field, k=10, slack=8):
-        name = "{}/top{}-{}_tfidf_words.p".format(self.flags.data_path,k,slack)
+        name = "{}/{}_top{}-{}_tfidf_words.p".format(self.flags.data_path,self.name,k,slack)
         selected = load_pickle(None,name,set())
         if len(selected):
             return selected
         print("gen",name)
 
-        name = "{}/stem_dic.p".format(self.flags.data_path)
+        name = "{}/{}_stem_dic.p".format(self.flags.data_path,self.name)
         self.stem_dic = load_pickle(self.stem_dic,name,{})
         assert len(self.stem_dic)
 
@@ -265,7 +266,7 @@ class nlpDB(pd_DB):
                 if c>0 and c%1000 == 0:
                     print("{} documents done, sample {}, num {}".format(c,topk,len(selected)))
         print("num of selected key words",len(selected))
-        name = "{}/top{}-{}_tfidf_words.p".format(self.flags.data_path,k,slack)
+        name = "{}/{}_top{}-{}_tfidf_words.p".format(self.flags.data_path,self.name,k,slack)
         save_pickle(selected,name)
         return selected
 
