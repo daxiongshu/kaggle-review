@@ -93,7 +93,7 @@ class nlpDB(pd_DB):
             for text in texts:
                 if text not in self.noise_texts:
                     all_tf_list.extend(self.sample_tf[text])
-            #idf_list = idf(all_tf_list,self.global_idf_dic,0)
+            idf(all_tf_list,self.global_idf_dic,0)
             save_pickle(self.global_idf_dic,name)
 
         for text in texts:
