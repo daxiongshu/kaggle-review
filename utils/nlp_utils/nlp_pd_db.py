@@ -220,8 +220,8 @@ class nlpDB(pd_DB):
         for i,j in self.words_count.items():
             self.global_word_count = self.global_word_count + j
 
-    def select_top_k_count_words(self, texts, field, k=10, slack=8):
-        name = "{}/{}_top{}-{}_count_words.p".format(self.flags.data_path,self.name,k,slack)
+    def select_top_k_words(self, texts, field, mode="count", k=10, slack=8):
+        name = "{}/{}_top{}-{}_{}_words.p".format(self.flags.data_path,self.name,k,slack,mode)
         selected = load_pickle(None,name,set())
         if len(selected):
             return selected
@@ -231,42 +231,32 @@ class nlpDB(pd_DB):
         self.stem_dic = load_pickle(self.stem_dic,name,{})
         assert len(self.stem_dic)
 
-        self.get_per_sample_words_count(texts,field)
+        if mode=="count":
+            self.get_per_sample_words_count(texts,field)
+        elif mode == "tfidf":
+            self.get_per_sample_tfidf(texts,field)
+        elif mode=="tf":
+            self.get_per_sample_tfidf(texts,field)
+        else:
+            print("unknown mode",mode)
+            assert 0
+
         for text in texts:
-            data = self.sample_words_count[text]
-            for c,tfidf in enumerate(data):
-                topk = sort_value(tfidf)[:k+slack]
+            if mode=="count":
+                data = self.sample_words_count[text]
+            elif mode=="tfidf":
+                data = self.sample_tfidf[text]
+            elif mode=="tf":
+                data = self.sample_tf[text]
+
+            for c,wd in enumerate(data):
+                topk = sort_value(wd)[:k+slack]
                 topk = set([i for i in topk if len(i)>2])
                 selected = selected.union(topk)
                 if c>0 and c%1000 == 0:
-                    print("{} documents done, sample {}, num {}".format(c,topk,len(selected)))
-        print("num of selected key words",len(selected))
-        name = "{}/{}_top{}-{}_count_words.p".format(self.flags.data_path,self.name,k,slack)
-        save_pickle(selected,name)
-        return selected
-
-    def select_top_k_tfidf_words(self, texts, field, k=10, slack=8):
-        name = "{}/{}_top{}-{}_tfidf_words.p".format(self.flags.data_path,self.name,k,slack)
-        selected = load_pickle(None,name,set())
-        if len(selected):
-            return selected
-        print("gen",name)
-
-        name = "{}/{}_stem_dic.p".format(self.flags.data_path,self.name)
-        self.stem_dic = load_pickle(self.stem_dic,name,{})
-        assert len(self.stem_dic)
-
-        self.get_per_sample_tfidf(texts,field)
-        for text in texts:
-            data = self.sample_tfidf[text]
-            for c,tfidf in enumerate(data):
-                topk = sort_value(tfidf)[:k+slack]
-                topk = set([i for i in topk if len(i)>2])
-                selected = selected.union(topk)
-                if c>0 and c%1000 == 0:
-                    print("{} documents done, sample {}, num {}".format(c,topk,len(selected)))
-        print("num of selected key words",len(selected))
-        name = "{}/{}_top{}-{}_tfidf_words.p".format(self.flags.data_path,self.name,k,slack)
+                    print("{} documents done, mode {}, sample {}, num {}".format(c,mode,topk,len(selected)))
+        print("num of selected {} key words:".format(mode),len(selected))
+        name = "{}/{}_top{}-{}_{}_words.p".format(self.flags.data_path,self.name,k,slack,mode)
         save_pickle(selected,name)
         return selected
 
