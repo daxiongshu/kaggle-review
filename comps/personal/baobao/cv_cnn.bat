@@ -1,0 +1,22 @@
+rem python main.py --comp personal --sol baobao --task train_cnn --fold 0 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_embedding___14.npy --embedding_size 64 --opt adam --learning_rate 0.01 --lambdax 0.0001 --batch_size 1024 --save_path comps/personal/baobao/weights --run_name fold0  --epochs 10 --classes 9 --folds 4 --window_size 16 --verbosity 10
+
+rem python main.py --comp personal --sol baobao --task test_cnn_cv --fold 0 --folds 4 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_cnn_fold0__6.npy --embedding_size 64 --batch_size 1024  --epochs 10 --classes 9 --window_size 16 --verbosity 10 --pred_path comps/personal/baobao/cnn_pred_cv0.csv --verbosity 10
+
+rem python main.py --comp personal --sol baobao --task train_cnn --fold 1 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_embedding___14.npy --embedding_size 64 --opt adam --learning_rate 0.01 --lambdax 0.0001 --batch_size 1024 --save_path comps/personal/baobao/weights --run_name fold1  --epochs 10 --classes 9 --folds 4 --window_size 16 --verbosity 10
+
+rem python main.py --comp personal --sol baobao --task test_cnn_cv --fold 1 --folds 4 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_cnn_fold1__6.npy --embedding_size 64 --batch_size 1024  --epochs 10 --classes 9 --window_size 16 --verbosity 10 --pred_path comps/personal/baobao/cnn_pred_cv1.csv --verbosity 10
+
+rem python main.py --comp personal --sol baobao --task train_cnn --fold 2 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_embedding___14.npy --embedding_size 64 --opt adam --learning_rate 0.01 --lambdax 0.0001 --batch_size 1024 --save_path comps/personal/baobao/weights --run_name fold2  --epochs 10 --classes 9 --folds 4 --window_size 16 --verbosity 10
+
+rem python main.py --comp personal --sol baobao --task test_cnn_cv --fold 2 --folds 4 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_cnn_fold2__6.npy --embedding_size 64 --batch_size 1024  --epochs 10 --classes 9 --window_size 16 --verbosity 10 --pred_path comps/personal/baobao/cnn_pred_cv2.csv --verbosity 10
+
+
+rem python main.py --comp personal --sol baobao --task train_cnn --fold 3 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_embedding___14.npy --embedding_size 64 --opt adam --learning_rate 0.01 --lambdax 0.0001 --batch_size 1024 --save_path comps/personal/baobao/weights --run_name fold3  --epochs 10 --classes 9 --folds 4 --window_size 16 --verbosity 10
+
+rem python main.py --comp personal --sol baobao --task test_cnn_cv --fold 3 --folds 4 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_cnn_fold3__6.npy --embedding_size 64 --batch_size 1024  --epochs 10 --classes 9 --window_size 16 --verbosity 10 --pred_path comps/personal/baobao/cnn_pred_cv3.csv --verbosity 10
+
+rem python main.py --comp personal --sol baobao --task train_cnn --fold -1 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_embedding___14.npy --embedding_size 64 --opt adam --learning_rate 0.01 --lambdax 0.0001 --batch_size 1024 --save_path comps/personal/baobao/weights --run_name all --epochs 10 --classes 9 --folds 4 --window_size 16 --verbosity 10
+
+python main.py --comp personal --sol baobao --task test_cnn_stage1 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_cnn_all__7.npy --embedding_size 64 --batch_size 1024  --epochs 10 --classes 9 --window_size 16 --verbosity 10 --pred_path comps/personal/baobao/cnn_pred_stage1.csv --verbosity 10
+
+python main.py --comp personal --sol baobao --task test_cnn_stage2 --input_path ../input --data_path comps/personal/baobao/data --seq_len 2048 --load_path comps/personal/baobao/weights/train_cnn_all__7.npy --embedding_size 64 --batch_size 1024  --epochs 10 --classes 9 --window_size 16 --verbosity 10 --pred_path comps/personal/baobao/cnn_pred_stage2.csv --verbosity 10

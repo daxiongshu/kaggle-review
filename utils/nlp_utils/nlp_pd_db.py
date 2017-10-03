@@ -52,7 +52,7 @@ class nlpDB(pd_DB):
         assert len(self.stem_dic)
 
         for text in texts:
-            name = "{}/{}_clean_doc_{}.p".format(self.flags.data_path,text,self.name)
+            name = "{}/{}_clean_doc_{}.p".format(self.flags.data_path,self.name,text)
             if os.path.exists(name):
                 self.clean_doc[text] = pickle.load(open(name,'rb'))
             else:
