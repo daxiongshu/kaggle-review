@@ -21,6 +21,8 @@ def main(_):
         from comps.instacart.run import run_sol
     elif FLAGS.comp == "carvana":
         from comps.carvana.run import run_sol
+    elif FLAGS.comp == "porto":
+        from comps.porto.run import run_sol
     elif FLAGS.comp == "mobike":
         from comps.mobike.run import run_sol
     elif FLAGS.comp == "zillow":

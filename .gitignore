@@ -4,6 +4,7 @@ comps/caesars
 comps/wiki
 comps/eng_norm
 comps/russian_norm
+comps/porto
 *.npy
 *.pb
 *.p
