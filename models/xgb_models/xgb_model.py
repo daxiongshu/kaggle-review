@@ -1,5 +1,5 @@
 """
-xgboost for pairwise ranking
+xgboost for classification & regression
 """
 import xgboost as xgb
 import numpy as np

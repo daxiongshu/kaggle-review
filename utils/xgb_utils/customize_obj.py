@@ -1,5 +1,6 @@
 import numpy as np
 from utils.np_utils.utils import softmax
+from utils.np_utils.utils import quadratic_weighted_kappa
 #https://www.kaggle.com/chenglongchen/customized-softkappa-loss-in-xgboost
 def kappa_obj(preds, dtrain):
     ## label are in [0,1,2,3] as required by XGBoost for multi-classification

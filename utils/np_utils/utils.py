@@ -86,5 +86,5 @@ def quadratic_weighted_kappa(rater_a, rater_b, min_rating=None, max_rating=None)
 def softmax(score):
     score = np.asarray(score, dtype=float)
     score = np.exp(score-np.max(score))
-    score /= np.sum(score, axis=1)[:,np.newaxis]
+    score = score/(np.sum(score, axis=1).reshape([score.shape[0],1]))#[:,np.newaxis]
     return score
