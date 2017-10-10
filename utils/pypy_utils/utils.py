@@ -2,6 +2,7 @@ from math import cos,log
 import pickle
 import os
 import csv
+from collections import defaultdict
 
 def load_pickle(data,name,default):
     if data is not None:
@@ -66,7 +67,7 @@ def apk(actual, predicted, k=3):
             score += num_hits / (i+1.0)
     return score / min(len(actual), k)
 
-def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False):
+def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False,ignorenan=True,mtr=None,bl=0,bar=0):
     print("csv2ffm",out)
     if os.path.exists(out):
         return fea_dic
@@ -78,11 +79,17 @@ def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False):
     field_dic = {i:c for c,i in enumerate(fields)}
 
     fo = open(out,'w')
+    cq = 0
     with open(inx) as f:
         for c,row in enumerate(csv.DictReader(f)):
             line = [row.get(y_col,'0')]
             for field in fields:
-                val = "%s_%s"%(field,row[field])
+                if ignorenan and row[field]=='':
+                    continue
+                val = "%s-%s"%(field,row[field])
+                if mtr is not None and (val not in mtr or abs(mtr[val]-bl)<bar):
+                    cq += 1
+                    continue
                 if val not in fea_dic:
                     if update:
                         fea_dic[val] = len(fea_dic)+1
@@ -91,8 +98,41 @@ def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False):
                 line.append("%s:%s:1"%(m,n))
             line = " ".join(line)
             fo.write(line+'\n')
-            if c>0 and c%10000000 ==  0:
-                print(c,out,'written')
+            if c>0 and c%100000 ==  0:
+                print(c,out,'written','ignore',cq)
     fo.close()
     return fea_dic
 
+def mean_target_rate(name,out,idcol,ycol):
+    if os.path.exists(out):
+        return pickle.load(open(out,'rb'))
+    yc,cc = defaultdict(float),defaultdict(float)
+    for c,row in enumerate(csv.DictReader(open(name))):
+        y = float(row[ycol])
+        for i in row:
+            if i in [idcol,ycol]:
+                continue
+            v = "%s-%s"%(i,row[i])
+            yc[v] += y
+            cc[v] += 1.0
+
+        if c>0 and c%100000 == 0:
+            print("rows %d len_cc %d"%(c,len(cc)))
+    for i in yc:
+        yc[i] = yc[i]/cc[i]
+    pickle.dump(yc,open(out,'wb'))
+    return yc
+
+def ffm2svm(inx,out):
+    if os.path.exists(out):
+        return 
+    fo = open(out,'w')
+    f = open(inx)
+    for line in f:
+        xx = line.strip().split()
+        fea = [int(i.split(':')[1]) for i in xx[1:]]
+        fea = sorted(fea)
+        line = ["%d:1"%i for i in fea]
+        fo.write("%s %s\n"%(xx[0]," ".join(line)))
+    f.close()
+    fo.close()

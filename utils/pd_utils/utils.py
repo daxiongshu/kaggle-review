@@ -17,6 +17,16 @@ def sequential_iterate_df(df,batch_size):
     for data in _chunker(df, batch_size):
         yield data
 
+def target_rate(df,col,ycol,bar=10):
+    vals = df[col].unique()
+    if len(vals)>bar:
+        return []
+    xx = []
+    for val in vals:
+        mask = df[col] == val
+        xx.append(df[mask][ycol].mean())
+    return xx
+
 def rm_categorical_cols(df,cols=None):
     print("rm categorical cols ...")
     bad = None

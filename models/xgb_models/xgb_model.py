@@ -18,6 +18,7 @@ class xgb_model(object):
 
         num_round = self.params.get('num_round',100)
         early_stopping_rounds = self.params.get('early_stopping_rounds',None)
+        maximize = self.params.get('maximize',False)
         dtrain = xgb.DMatrix(X, y)
         vb = self.params.get('verbose_eval',1)
         if Xt is not None:
@@ -25,7 +26,7 @@ class xgb_model(object):
             watchlist = [(dtrain, 'train'), (dvalid, 'valid')]
             bst = xgb.train(self.params, dtrain, num_round, evals = watchlist,
                 early_stopping_rounds=early_stopping_rounds,verbose_eval=vb,
-                xgb_model=load_model,obj=obj,feval=feval)
+                xgb_model=load_model,obj=obj,feval=feval,maximize=maximize)
         else:
             watchlist = [(dtrain, 'train')]
             bst = xgb.train(self.params, dtrain, num_round, evals = watchlist,
