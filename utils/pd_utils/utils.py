@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def random_batch_gen(df,batch_size):
     B = batch_size
@@ -82,8 +83,22 @@ def count_missing_per_row(df):
     print("count missinv values per row ...")
     df['num_missing'] = df.isnull().sum(axis=1)
 
+def rank_cat(df_tr,ycol,df_te=None,cols=None,rank=True):
+    if cols is None:
+        cols = [i for i in df_tr.columns.values if df_tr[i].dtype=='object']
+    if len(cols)==0:
+        print("no cat cols found")
+        return
+    for col in cols:
+        dic = df_tr.groupby(col)[ycol].mean().to_dict()
+        if rank:
+            ks = [i for i in dic]
+            vs = np.array([dic[i] for i in ks]).argsort().argsort()
+            dic = {i:j for i,j in zip(ks,vs)}
+        df_tr[col] = df_tr[col].apply(lambda x: dic[x])
+        if df_te is not None:
+            df_te[col] = df_te[col].apply(lambda x: dic.get(x,-1))
+     
 if __name__ == "__main__":
-    s = pd.read_csv("utils/pd_utils/xx.csv")
-    print(s)
-    impute(s)
-    print(s)
+    s = pd.read_csv("../input/train.csv")
+    rank_cat(s,'target',cols=['ps_ind_01'])
