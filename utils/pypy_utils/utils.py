@@ -67,7 +67,7 @@ def apk(actual, predicted, k=3):
             score += num_hits / (i+1.0)
     return score / min(len(actual), k)
 
-def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False,ignorenan=True,mtr=None,bl=0,bar=0):
+def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False,ignorenan=True,mtr=None,bl=0,bar=0,na=''):
     print("csv2ffm",out)
     if os.path.exists(out):
         return fea_dic
@@ -84,8 +84,10 @@ def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False,ignorenan=True,mtr=None
         for c,row in enumerate(csv.DictReader(f)):
             line = [row.get(y_col,'0')]
             for field in fields:
-                if ignorenan and row[field]=='':
+                if ignorenan and row[field]==na:
                     continue
+                #if '.' in row[field] and len(row[field])>5:
+                #    row[field] = row[field][:-1]
                 val = "%s-%s"%(field,row[field])
                 if mtr is not None and (val not in mtr or abs(mtr[val]-bl)<bar):
                     cq += 1
@@ -93,6 +95,8 @@ def csv2ffm(inx,out,id_col,y_col,fea_dic={},update=False,ignorenan=True,mtr=None
                 if val not in fea_dic:
                     if update:
                         fea_dic[val] = len(fea_dic)+1
+                    else:
+                        continue
                 m = field_dic[field]
                 n = fea_dic.get(val,'0')
                 line.append("%s:%s:1"%(m,n))
