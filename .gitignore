@@ -5,6 +5,9 @@ comps/wiki
 comps/eng_norm
 comps/russian_norm
 comps/porto
+model.ckpt*
+*tfevents*
+*.pbtxt
 *.npy
 *.pb
 *.p

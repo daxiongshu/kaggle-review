@@ -1,4 +1,4 @@
-# Review and reproduction of kaggle winning solutions 
+# Review and reproduction of kaggle solutions 
 
 Goals:
 >1. modularize the code for future reuse.

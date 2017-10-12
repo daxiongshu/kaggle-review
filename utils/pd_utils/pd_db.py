@@ -36,7 +36,7 @@ class pd_DB(object):
             if os.path.exists(pname):
                 data[name] = pd.read_pickle(pname)
             else:
-                if len(dtype)==0 and prob_dtype:
+                if dtype is None and prob_dtype:
                     dtype = self._get_dtype(fname)
                 data[name] = pd.read_csv(fname,dtype=dtype)
                 data[name].to_pickle(pname)

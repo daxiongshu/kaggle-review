@@ -37,6 +37,8 @@ def main(_):
         from comps.caesars.run import run_sol
     elif FLAGS.comp == "personal":
         from comps.personal.run import run_sol
+    elif FLAGS.comp == "income":
+        from comps.income.run import run_sol
     else:
         print("Unknown competion %s"%FLAGS.comp)
         assert False
