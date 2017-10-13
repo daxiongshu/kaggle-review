@@ -1,5 +1,13 @@
 import numpy as np
 
+def acc(y,yp):
+    assert y.shape[0] == yp.shape[0]
+    if len(yp.shape) == 1:
+        ypx = (yp>0.5).astype(int)
+    else:
+        ypx = np.argmax(yp,axis=1)
+    return y[y==ypx].shape[0]*1.0/y.shape[0]
+
 def cross_entropy(y,yp):
     yp[yp>0.99999] = 0.99999
     yp[yp<1e-5] = 1e-5

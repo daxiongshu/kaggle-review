@@ -106,10 +106,12 @@ def tf_num_columns(df, cols=None):
 def tf_columns(df, cols=None):
     return tf_num_columns(df,cols)+tf_cat_columns(df,cols)
 
-def tf_input_fn(df, ycol, batch_size, epochs, shuffle, threads=8):
+def tf_input_fn(df, ycol, batch_size, epochs, shuffle, threads=8, usey=True):
+    y = df[ycol] if usey else None
+    x = df.drop(ycol,axis=1) if usey and ycol in df.columns.values else df
     return tf.estimator.inputs.pandas_input_fn(
-        x=df.drop(ycol,axis=1),
-        y=df[ycol],
+        x=x,
+        y=y,
         batch_size=batch_size,
         num_epochs=epochs,
         shuffle=shuffle,
