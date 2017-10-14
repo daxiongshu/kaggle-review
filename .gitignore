@@ -17,3 +17,4 @@ model.ckpt*
 *.csv
 *.b
 *.txt
+*.ipynb

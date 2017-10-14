@@ -83,6 +83,7 @@ def count_missing_per_row(df):
     print("count missinv values per row ...")
     df['num_missing'] = df.isnull().sum(axis=1)
 
+#overfitting! try LOO!
 def rank_cat(df_tr,ycol,df_te=None,cols=None,rank=True,tag=''):
     if cols is None:
         cols = [i for i in df_tr.columns.values if df_tr[i].dtype=='object']
@@ -99,6 +100,7 @@ def rank_cat(df_tr,ycol,df_te=None,cols=None,rank=True,tag=''):
         if df_te is not None:
             df_te[tag+col] = df_te[col].apply(lambda x: dic.get(x,np.nan))
 
+#overfitting! try LOO!
 def std_cat(df_tr,ycol,df_te=None,cols=None,tag=''):
     if cols is None:
         cols = [i for i in df_tr.columns.values if df_tr[i].dtype=='object']
@@ -110,6 +112,29 @@ def std_cat(df_tr,ycol,df_te=None,cols=None,tag=''):
         df_tr[tag+col] = df_tr[col].apply(lambda x: dic[x])
         if df_te is not None:
             df_te[tag+col] = df_te[col].apply(lambda x: dic.get(x,np.nan))    
+
+def same_dtype_of_two_df(df1,df2):
+    res = True
+    for col in df1.columns.values:
+        if df1[col].dtype!=df2[col].dtype:
+            print(col,df1[col].dtype,df2[col].dtype)
+            res = False
+    print("yes" if res else "no")
+
+def same_set_of_two_df(df1,df2):
+    res = True
+    for col in df1.columns.values:
+        if df1[col].dtype!='object':
+            continue
+        s1 = set(df1[col].map(str).unique().tolist())
+        s2 = set(df2[col].map(str).unique().tolist())
+        if s1!=s2:
+            if len(s1-s2)<10 and len(s2-s1)<10:               
+                print(col,s1-s2,s2-s1)
+            else:
+                print(col,len(s1-s2),len(s2-s1))
+            res = False
+    print("yes" if res else "no")
  
 if __name__ == "__main__":
     s = pd.read_csv("../input/train.csv")

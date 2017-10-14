@@ -37,14 +37,14 @@ class pd_DB(object):
                 data[name] = pd.read_pickle(pname)
             else:
                 if dtype is None and prob_dtype:
-                    dtype = self._get_dtype(fname)
+                    dtype = self._get_dtype(fname,silent=flags.verbosity<=0)
                 data[name] = pd.read_csv(fname,dtype=dtype)
                 data[name].to_pickle(pname)
             print_mem_time("Loaded {} {}".format(fname.split('/')[-1],data[name].shape))
         self.data = data # no copy, pass the inference
         print()
 
-    def _get_dtype(self,fname):
+    def _get_dtype(self,fname,silent=False):
         data = pd.read_csv(fname).fillna(0)
         cols = data.columns.values
         dtype = {}
@@ -69,7 +69,8 @@ class pd_DB(object):
                     dtype[col] = np.int64
             else:
                 dtype[col] = data[col].dtype
-        print("\n {} {} \n".format(fname,dtype))
+        if not silent:
+            print("\n {} {} \n".format(fname,dtype))
         with open('%s/dtype.txt'%self.flags.data_path,'a') as fo:
             fo.write("{} {} \n".format(fname,dtype))
         del data
