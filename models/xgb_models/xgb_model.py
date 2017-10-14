@@ -49,7 +49,7 @@ class xgb_model(object):
 
     def bag_fit_predict(self,X,y,Xt,obj=None,feval=None,folds=4,stratified=True,ydim=1,evalx=None):
         assert (self.params['colsample_bytree'] < 1 or self.params['subsample'] < 1)
-        X,y,Xt = np.array(X),np.array(y),np.array(Xt)
+        #X,y,Xt = np.array(X),np.array(y),np.array(Xt)
         num_round = self.params.get('num_round',1000)
         early_stopping_rounds = self.params['early_stopping_rounds']
         maximize = self.params.get('maximize',False)

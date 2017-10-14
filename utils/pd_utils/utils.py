@@ -116,6 +116,8 @@ def std_cat(df_tr,ycol,df_te=None,cols=None,tag=''):
 def same_dtype_of_two_df(df1,df2):
     res = True
     for col in df1.columns.values:
+        if col not in df2.columns.values:
+            continue
         if df1[col].dtype!=df2[col].dtype:
             print(col,df1[col].dtype,df2[col].dtype)
             res = False
@@ -126,6 +128,8 @@ def same_set_of_two_df(df1,df2):
     for col in df1.columns.values:
         if df1[col].dtype!='object':
             continue
+        if col not in df2.columns.values:
+            continue
         s1 = set(df1[col].map(str).unique().tolist())
         s2 = set(df2[col].map(str).unique().tolist())
         if s1!=s2:
@@ -133,6 +137,18 @@ def same_set_of_two_df(df1,df2):
                 print(col,s1-s2,s2-s1)
             else:
                 print(col,len(s1-s2),len(s2-s1))
+            res = False
+    print("yes" if res else "no")
+
+def same_range_of_two_df(df1,df2):
+    res = True
+    for col in df1.columns.values:
+        if df1[col].dtype=='object':
+            continue
+        if col not in df2.columns.values:
+            continue
+        if df1[col].min()!=df2[col].min() or df1[col].max()!=df2[col].max():
+            print(col,[df1[col].min(),df1[col].max()],[df2[col].min(),df2[col].max()])
             res = False
     print("yes" if res else "no")
  

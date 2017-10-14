@@ -76,6 +76,20 @@ def encode_line(line,dic):
         res.append(str(dic.get(x,0)))
     return " ".join(res)
 
+
+def tf_cat_bucket_columns(df, cols=None, bins=1000):
+    if cols is None:
+        cols = [i for i in df.columns.values if df[i].dtype=='object']
+    if len(cols)==0:
+        print("no cat cols found")
+        return []
+    tf_cols = []
+    print('cat cols for bins',cols,bins)
+    for col in cols:
+        tf_cols.append(tf.feature_column.categorical_column_with_hash_bucket(
+            col, hash_bucket_size=bins))
+    return tf_cols
+
         
 def tf_cat_columns(df, cols=None):
     if cols is None:
@@ -99,12 +113,11 @@ def tf_num_columns(df, cols=None):
     print('num cols',cols)
     tf_cols = []
     for col in cols:
-        levels = df[col].unique().tolist()
         tf_cols.append(tf.feature_column.numeric_column(col))
     return tf_cols     
 
-def tf_columns(df, cols=None):
-    return tf_num_columns(df,cols)+tf_cat_columns(df,cols)
+def tf_columns(df, num_cols=None,cat_cols=None):
+    return tf_num_columns(df,num_cols)+tf_cat_columns(df,cat_cols)
 
 def tf_input_fn(df, ycol, batch_size, epochs, shuffle, threads=8, usey=True):
     y = df[ycol] if usey else None
