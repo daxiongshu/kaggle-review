@@ -47,7 +47,8 @@ class xgb_model(object):
             return score
         return 0
 
-    def bag_fit_predict(self,X,y,Xt,obj=None,feval=None,folds=4,stratified=True,ydim=1,evalx=None):
+    def bag_fit_predict(self,X,y,Xt,obj=None,feval=None,folds=4,
+        stratified=True,ydim=1,evalx=None,shuffle=True):
         assert (self.params['colsample_bytree'] < 1 or self.params['subsample'] < 1)
         #X,y,Xt = np.array(X),np.array(y),np.array(Xt)
         num_round = self.params.get('num_round',1000)
@@ -57,11 +58,11 @@ class xgb_model(object):
         def _get_split(X,y,stratified):
             import sklearn
             if stratified:
-                kf = sklearn.model_selection.StratifiedKFold(n_splits=folds, shuffle=True, random_state=126)
+                kf = sklearn.model_selection.StratifiedKFold(n_splits=folds, shuffle=shuffle, random_state=126)
                 for tr,te in kf.split(X,y):
                     yield tr,te
             else:
-                kf = sklearn.model_selection.KFold(n_splits=folds, shuffle=True, random_state=126)
+                kf = sklearn.model_selection.KFold(n_splits=folds, shuffle=shuffle, random_state=126)
                 for tr,te in kf.split(X):
                     yield tr,te
         if ydim==1:

@@ -1,5 +1,8 @@
 import numpy as np
 
+def mae(y,yp):
+    return np.mean(np.abs(y-yp))
+
 def acc(y,yp):
     assert y.shape[0] == yp.shape[0]
     if len(yp.shape) == 1:

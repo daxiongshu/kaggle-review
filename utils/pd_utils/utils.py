@@ -69,6 +69,7 @@ def rm_const_cols(df,bar=0.999):
     print("df shape",df.shape,"num const cols",len(const))
     if len(const)>0:
         df.drop(const,axis=1,inplace=True)
+    return const
 
 def get_ymd(df,col,deli='-',order="ymd"):
     print("get year month day ...")
@@ -78,6 +79,7 @@ def get_ymd(df,col,deli='-',order="ymd"):
     df["year"] = df[col].apply(lambda x: x.split(deli)[order_dic['y']]).astype(int)
     df["month"] = df[col].apply(lambda x: x.split(deli)[order_dic['m']]).astype(int)
     df["day"] = df[col].apply(lambda x: x.split(deli)[order_dic['d']]).astype(int)
+    df["time"] = ((df["year"]-df["year"].min())*12 + df["month"]-1)*30 + df["day"]
 
 def count_missing_per_row(df):
     print("count missinv values per row ...")
@@ -123,11 +125,11 @@ def same_dtype_of_two_df(df1,df2):
             res = False
     print("yes" if res else "no")
 
-def same_set_of_two_df(df1,df2):
+def same_set_of_two_df(df1,df2,cols=None):
     res = True
-    for col in df1.columns.values:
-        if df1[col].dtype!='object':
-            continue
+    if cols is None:
+        cols = [i for i in df1.columns.values if df1[i].dtype=='object']
+    for col in cols:
         if col not in df2.columns.values:
             continue
         s1 = set(df1[col].map(str).unique().tolist())
@@ -140,9 +142,11 @@ def same_set_of_two_df(df1,df2):
             res = False
     print("yes" if res else "no")
 
-def same_range_of_two_df(df1,df2):
+def same_range_of_two_df(df1,df2,cols=None):
+    if cols is None:
+        cols = [i for i in df1.columns.values if df1[i].dtype!='object']
     res = True
-    for col in df1.columns.values:
+    for col in cols:
         if df1[col].dtype=='object':
             continue
         if col not in df2.columns.values:
@@ -151,7 +155,53 @@ def same_range_of_two_df(df1,df2):
             print(col,[df1[col].min(),df1[col].max()],[df2[col].min(),df2[col].max()])
             res = False
     print("yes" if res else "no")
- 
+
+def plot_fea_vs_target(df,ycol,path,tag='',cols=None):
+    from utils.draw.sns_draw import scatter
+    if cols is None:
+        cols = [i for i in df.columns.values if df[i].dtype!='object']
+    for col in cols:
+        scatter(df[col],df[ycol],xlabel=col,ylabel=ycol,name="%s/%s-%s.png"%(path,col,tag),title=tag)
+
+def corr_fea(df,cols,de=None,bar=0.9):
+    from scipy.stats import pearsonr
+    xcols = []
+    for c,i in enumerate(cols[:-1]):
+        for j in cols[c+1:]:
+            if i==j:
+                continue
+            #score = pearsonr(df[i],df[j])[0]
+            score = df[i].corr(df[j])
+            #print(i,j,score)
+            if score>bar:
+                df["%s-%s"%(i,j)] = df[i]-df[j]
+                if de is not None:
+                    de["%s-%s"%(i,j)] = de[i]-de[j]
+                xcols.append(j)
+            if score<-bar:
+                df["%s+%s"%(i,j)] = df[i]+df[j]
+                if de is not None:
+                    de["%s+%s"%(i,j)] = de[i]+de[j]
+                xcols.append(j)
+    return xcols
+
+def rm_corr(df,cols=None,de=None,bar=0.99):
+    if cols is None:
+        cols = [i for i in df.columns.values if df[i].dtype!='object']
+    bad = []
+    for c,i in enumerate(cols[:-1]):
+        for j in cols[c+1:]:
+            if i==j:
+                continue
+            score = df[i].corr(df[j])
+            if score>bar:
+                bad.append(j)
+    bad = list(set(bad))
+    print("rm ",bad)
+    df.drop(bad,axis=1,inplace=True)
+    if de is not None:
+        de.drop(bad,axis=1,inplace=True)
+
 if __name__ == "__main__":
     s = pd.read_csv("../input/train.csv")
     rank_cat(s,'target',cols=['ps_ind_01'])
