@@ -4,12 +4,12 @@ from comps.personal.personal_db import personalDB
 import os
 
 def train_embedding(flags):
-    myDB = personalDB(flags)
+    myDB = personalDB(flags,name='full')
     model = BaoEmbedding(flags,myDB)
     model.train() 
 
 def show_embedding(flags):
-    myDB = personalDB(flags)
+    myDB = personalDB(flags,name='full')
     model = BaoEmbedding(flags,myDB)
     model.show_embedding("CBOW/embedding/w:0")
 
@@ -18,7 +18,7 @@ class BaoEmbedding(BaseRnnModel):
     def __init__(self,flags,DB):
         super().__init__(flags)
         self.DB = DB
-        all_words = self.DB.select_top_k_tfidf_words(['training_text','test_text_filter'],"Text")
+        all_words = self.DB.select_top_words(['training_text','test_text_filter'],"Text",mode='tfidf')
         self.DB.get_words(all_words)
         self.DB.get_clean_doc(['training_text','test_text_filter'],"Text",all_words)
         self.all_words = all_words
