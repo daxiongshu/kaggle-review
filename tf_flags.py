@@ -63,6 +63,8 @@ if flags.FLAGS.comp == "personal" or flags.FLAGS.comp == "pt":
     flags.DEFINE_integer("window_size",None,"window size for rnn")
     flags.DEFINE_integer("seq_len",None,"length of the sequence")
     flags.DEFINE_integer("d2v_size",None,"d2v_size")
+if flags.FLAGS.comp == "porto":
+    flags.DEFINE_integer("max_features",None,"max features")
 #####################################################################
 
 FLAGS = flags.FLAGS

@@ -120,19 +120,7 @@ class BaseModel(object):
         tvars = self.var_list
         self.print_trainable()
         with tf.name_scope("Optimizer"):
-            if self.flags.opt == 'adam':
-                opt = tf.train.AdamOptimizer(learning_rate=self.flags.learning_rate)
-            elif self.flags.opt == 'sgd':
-                opt = tf.train.GradientDescentOptimizer(learning_rate=self.flags.learning_rate)
-            elif self.flags.opt == 'momentum':
-                opt = tf.train.MomentumOptimizer(learning_rate=self.flags.learning_rate,
-                    momentum = self.flags.momentum)
-            elif self.flags.opt == 'rmsprop':
-                opt = tf.train.RMSPropOptimizer(learning_rate=self.flags.learning_rate)
-            else:
-                print("unkown opt %s"%self.flags.opt)
-                assert 0
-
+            opt = self._get_optx()
             grads = tf.gradients(self.loss+self.l2loss, tvars)
             grads = list(zip(grads, tvars))
             # Op to update all variables according to their gradient
@@ -141,6 +129,21 @@ class BaseModel(object):
             if self.flags.visualize and "grad" in self.flags.visualize:
                 for grad, var in grads:
                     tf.summary.histogram(var.name + '/gradient', grad, collections=[tf.GraphKeys.GRADIENTS])
+
+    def _get_optx(self):
+        if self.flags.opt == 'adam':
+            opt = tf.train.AdamOptimizer(learning_rate=self.flags.learning_rate)
+        elif self.flags.opt == 'sgd':
+            opt = tf.train.GradientDescentOptimizer(learning_rate=self.flags.learning_rate)
+        elif self.flags.opt == 'momentum':
+            opt = tf.train.MomentumOptimizer(learning_rate=self.flags.learning_rate,
+                momentum = self.flags.momentum)
+        elif self.flags.opt == 'rmsprop':
+            opt = tf.train.RMSPropOptimizer(learning_rate=self.flags.learning_rate)
+        else:
+            print("unkown opt %s"%self.flags.opt)
+            assert 0
+        return opt
 
     def _get_summary(self):
         # build the self.summ_op for tensorboard
@@ -570,15 +573,18 @@ class BaseModel(object):
             for batch in self._batch_gen_test():
                 x,_,epoch = batch
                 if self.flags.log_path and self.flags.visualize is not None:
-                    summary,pred = sess.run([self.summ_op,self.logit],feed_dict={self.inputs:x})
+                    summary,pred = sess.run([self.summ_op,self.logit],feed_dict={self.inputs:x,self.is_training:0})
                     summary_writer.add_summary(summary, count)
                 else:
-                    pred = sess.run(self.logit,feed_dict={self.inputs:x})
+                    pred = sess.run(self.logit,feed_dict={self.inputs:x,self.is_training:0})
                 count+=1
                 if count%self.flags.verbosity == 0:
                     print_mem_time("Epoch %d Batch %d "%(epoch,count))
-                with open(self.flags.pred_path,'a') as f:
-                    pd.DataFrame(pred).to_csv(f, header=False,index=False, float_format='%.5f')
+                self.write_pred(pred)
+
+    def write_pred(self,pred):
+        with open(self.flags.pred_path,'a') as f:
+            pd.DataFrame(pred).to_csv(f, header=False,index=False, float_format='%.5f')
 
     def train_from_placeholder(self, va=False):
 
@@ -596,17 +602,13 @@ class BaseModel(object):
             sess.run(tf.local_variables_initializer())
             self._restore()
             if self.flags.log_path and self.flags.visualize is not None:
-                summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
+                self.summary_writer = tf.summary.FileWriter(self.flags.log_path, sess.graph)
             count = 0
             ave_loss = 0
             self.epoch = 0
             for batch in self._batch_gen():
                 x,y,epoch = batch
-                if self.flags.log_path and self.flags.visualize is not None:
-                    summary,_,loss = sess.run([self.summ_op,self.opt_op,self.loss],feed_dict={self.inputs:x,self.labels:y,self.is_training:1})
-                    summary_writer.add_summary(summary, count)
-                else:
-                    _,loss = sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,self.labels:y,self.is_training:1})
+                loss = self._run_train(x,y)
                 if count==0:
                     print("First loss",loss)
                 count+=1
@@ -619,7 +621,16 @@ class BaseModel(object):
                     self.epoch = epoch
                     if epoch%self.flags.save_epochs==0:
                         self._save()
+            self.epoch = self.flags.epochs
             self._save()
+
+    def _run_train(self,x,y):
+        if self.flags.log_path and self.flags.visualize is not None:
+            summary,_,loss = self.sess.run([self.summ_op,self.opt_op,self.loss],feed_dict={self.inputs:x,self.labels:y,self.is_training:1})
+            self.summary_writer.add_summary(summary, count)
+        else:
+            _,loss = self.sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,self.labels:y,self.is_training:1})
+        return loss
 
     def eval_va(self):
         losses = []
@@ -635,5 +646,7 @@ class BaseModel(object):
             return loss
         return ave_loss*0.99 + loss*0.01
 
-    def _dropout(self,x):
-        return tf.cond(self.is_training, lambda: tf.nn.dropout(x, self.flags.keep_prob), lambda: x)
+    def _dropout(self,x,keep_prob = None):
+        if keep_prob is None:
+            keep_prob = self.flags.keep_prob
+        return tf.cond(self.is_training, lambda: tf.nn.dropout(x, keep_prob), lambda: x)
