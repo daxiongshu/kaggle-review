@@ -11,6 +11,7 @@ class BaseModel(object):
         self.global_step = tf.Variable(0, name='global_step',trainable=False)
         self.feed_dict = None
         self.summ_op = None
+        self.labels = None
         self.var_list = []
         self.loaded_weights = {}
         self._load()
@@ -581,9 +582,10 @@ class BaseModel(object):
 
     def train_from_placeholder(self, va=False):
 
-        labels = tf.placeholder(tf.float32, shape=(None,None)) 
+        if self.labels is None:
+            self.labels = tf.placeholder(tf.float32, shape=(None,None))
         self._build()
-        self._get_loss(labels)
+        self._get_loss(self.labels)
         self._get_opt()
         self._get_summary()
         ve = self.flags.verbosity
@@ -601,29 +603,32 @@ class BaseModel(object):
             for batch in self._batch_gen():
                 x,y,epoch = batch
                 if self.flags.log_path and self.flags.visualize is not None:
-                    summary,_,loss = sess.run([self.summ_op,self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y,self.is_training:1})
+                    summary,_,loss = sess.run([self.summ_op,self.opt_op,self.loss],feed_dict={self.inputs:x,self.labels:y,self.is_training:1})
                     summary_writer.add_summary(summary, count)
                 else:
-                    _,loss = sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,labels:y,self.is_training:1})
+                    _,loss = sess.run([self.opt_op,self.loss],feed_dict={self.inputs:x,self.labels:y,self.is_training:1})
                 if count==0:
                     print("First loss",loss)
                 count+=1
                 ave_loss = self._update_ave_loss(ave_loss,loss)
-                if count%ve == 0:
+                if count%(ve//10) == 0:
                     print_mem_time("Epoch %d Batch %d ave loss %.3f"%(epoch,count,ave_loss))
                 if va and count%ve == 0:
-                    losses = []
-                    #print()
-                    for x,y,_  in self._batch_gen_va():
-                        loss = sess.run(self.loss,feed_dict={self.inputs:x,labels:y,self.is_training:0})
-                        #print_mem_time("Validation loss %.3f"%(loss))
-                        losses.append(loss)
-                    print("Ave validation loss {}".format(np.mean(losses)))
+                    self.eval_va()
                 if epoch>self.epoch:
                     self.epoch = epoch
                     if epoch%self.flags.save_epochs==0:
                         self._save()
             self._save()
+
+    def eval_va(self):
+        losses = []
+        for x,y,_  in self._batch_gen_va():
+            loss,logit = self.sess.run([self.loss,self.logit],feed_dict={self.inputs:x,self.labels:y,self.is_training:0})
+            #print_mem_time("Validation loss %.3f"%(loss))
+            losses.append(loss)
+        print("Ave validation loss {}".format(np.mean(losses)))
+
                  
     def _update_ave_loss(self,ave_loss,loss):
         if ave_loss == 0:

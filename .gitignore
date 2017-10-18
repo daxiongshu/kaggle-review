@@ -6,6 +6,7 @@ comps/eng_norm
 comps/russian_norm
 comps/porto
 comps/pt
+models/tf_models/ffm
 model.ckpt*
 *tfevents*
 *.pbtxt
