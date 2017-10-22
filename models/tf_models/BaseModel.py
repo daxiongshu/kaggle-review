@@ -140,6 +140,8 @@ class BaseModel(object):
                 momentum = self.flags.momentum)
         elif self.flags.opt == 'rmsprop':
             opt = tf.train.RMSPropOptimizer(learning_rate=self.flags.learning_rate)
+        elif self.flags.opt == 'adagrad':
+            opt = tf.train.AdagradOptimizer(learning_rate=self.flags.learning_rate)
         else:
             print("unkown opt %s"%self.flags.opt)
             assert 0
@@ -345,10 +347,18 @@ class BaseModel(object):
         # return a std
         return np.sqrt(2. / (fan_in + fan_out))
 
-    def _fc(self, x, fan_in, fan_out, layer_name, activation=None, L2=1, use_bias=True):
+    def _fc(self, x, fan_in, fan_out, layer_name, activation=None, L2=1, use_bias=True,
+        wmin=None,wmax=None):
         show_weight = self.flags.visualize and 'weight' in self.flags.visualize
+        if wmin is not None or wmax is not None:
+            use_bias = False
+            assert wmin is not None and wmax is not None
         with tf.variable_scope(layer_name.split('/')[-1]):
             w,b = self._get_fc_weights(fan_in, fan_out, layer_name)
+            if wmin is not None:
+                wr = wmax-wmin
+                w = self._activate(w,'sigmoid')*wr+wmin
+                #w = tf.clip_by_value(w,wmin,wmax)
             net = tf.matmul(x,w)
             if use_bias:
                 net = tf.nn.bias_add(net, b)
@@ -358,6 +368,7 @@ class BaseModel(object):
                 if use_bias:
                     tf.summary.histogram(name='bias', values=b, collections=[tf.GraphKeys.WEIGHTS])
         return net
+
 
 
     def _get_fc_weights(self, fan_in, fan_out, layer_name):
@@ -613,9 +624,9 @@ class BaseModel(object):
                     print("First loss",loss)
                 count+=1
                 ave_loss = self._update_ave_loss(ave_loss,loss)
-                if count%(ve//10) == 0:
+                if count%(ve) == 0:
                     print_mem_time("Epoch %d Batch %d ave loss %.3f"%(epoch,count,ave_loss))
-                if va and count%ve == 0:
+                if va and (count%ve == 0 or epoch>self.epoch):
                     self.eval_va()
                 if epoch>self.epoch:
                     self.epoch = epoch
