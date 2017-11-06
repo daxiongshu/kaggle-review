@@ -348,7 +348,7 @@ class BaseModel(object):
         return np.sqrt(2. / (fan_in + fan_out))
 
     def _fc(self, x, fan_in, fan_out, layer_name, activation=None, L2=1, use_bias=True,
-        wmin=None,wmax=None):
+        wmin=None,wmax=None,analysis=False):
         show_weight = self.flags.visualize and 'weight' in self.flags.visualize
         if wmin is not None or wmax is not None:
             use_bias = False
@@ -367,6 +367,10 @@ class BaseModel(object):
                 tf.summary.histogram(name='W', values=w, collections=[tf.GraphKeys.WEIGHTS])
                 if use_bias:
                     tf.summary.histogram(name='bias', values=b, collections=[tf.GraphKeys.WEIGHTS])
+        if analysis:
+            net1 = tf.expand_dims(x,2)*tf.expand_dims(w,0)
+            #net1 = tf.reshape(net1,[tf.shape(x)[0],fan_in*fan_out])
+            return net,net1
         return net
 
 
@@ -593,8 +597,10 @@ class BaseModel(object):
                     print_mem_time("Epoch %d Batch %d "%(epoch,count))
                 self.write_pred(pred)
 
-    def write_pred(self,pred):
-        with open(self.flags.pred_path,'a') as f:
+    def write_pred(self,pred,out=None):
+        if out is None:
+            out=self.flags.pred_path
+        with open(out,'a') as f:
             pd.DataFrame(pred).to_csv(f, header=False,index=False, float_format='%.5f')
 
     def train_from_placeholder(self, va=False):
