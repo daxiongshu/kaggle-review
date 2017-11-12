@@ -19,6 +19,8 @@ def main(_):
     print_args()
     if FLAGS.comp == "instacart":
         from comps.instacart.run import run_sol
+    elif FLAGS.comp == "iceberg":
+        from comps.iceberg.run import run_sol     
     elif FLAGS.comp == "pt":
         from comps.pt.run import run_sol
     elif FLAGS.comp == "carvana":

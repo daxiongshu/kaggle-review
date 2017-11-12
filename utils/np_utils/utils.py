@@ -11,6 +11,11 @@ def acc(y,yp):
         ypx = np.argmax(yp,axis=1)
     return y[y==ypx].shape[0]*1.0/y.shape[0]
 
+def logloss(y,yp):
+    yp[yp>0.99999] = 0.99999
+    yp[yp<1e-5] = 1e-5
+    return np.mean(-y*np.log(yp)-(1-y)*np.log(1-yp))
+
 def cross_entropy(y,yp):
     yp[yp>0.99999] = 0.99999
     yp[yp<1e-5] = 1e-5
