@@ -214,11 +214,11 @@ class BaseModel(object):
 
         # This function could be overwritten
         # default implementation is for multi classification
-        with open(self.flags.pred_path,'w') as f:
-            pass
         print()
         self._build(inputs)
         print()
+        with open(self.flags.pred_path,'w') as f:
+            pass 
         if labels is not None:
             self._get_loss(labels)
         self.pred = self._activate(self.logit, activation)
