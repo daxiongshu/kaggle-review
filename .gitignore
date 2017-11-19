@@ -7,6 +7,7 @@ comps/eng_norm
 comps/russian_norm
 comps/porto
 comps/pt
+comps/favorita
 models/tf_models/ffm
 model.ckpt*
 *tfevents*

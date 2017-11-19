@@ -1,4 +1,11 @@
 import numpy as np
+def rmsle(y,yp):
+    y1 = y.copy()
+    y1[y1<0] = 0
+    return rmse(np.log1p(y1),np.log1p(yp))
+
+def rmse(y,yp):
+    return np.mean((y-yp)**2)**0.5
 
 def mae(y,yp):
     return np.mean(np.abs(y-yp))

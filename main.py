@@ -43,6 +43,8 @@ def main(_):
         from comps.personal.run import run_sol
     elif FLAGS.comp == "income":
         from comps.income.run import run_sol
+    elif FLAGS.comp == "favorita":
+        from comps.favorita.run import run_sol
     else:
         print("Unknown competion %s"%FLAGS.comp)
         assert False

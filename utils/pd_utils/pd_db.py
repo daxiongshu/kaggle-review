@@ -7,8 +7,14 @@ import numpy as np
 import os
 import gc
 from utils.utils import print_mem_time 
+from collections import namedtuple
 
 class pd_DB(object):
+    def build(self):
+        self.Table = namedtuple('Table', 'name fname dtype')
+        TABLES = [self.Table(i,"%s/%s"%(self.path,j),None) for i,j in zip(self.names,self.fnames)]
+        self._build(self.flags,TABLES)
+
     def _build(self,flags,tables=[],prob_dtype=False):
         """
             Input:
@@ -36,6 +42,7 @@ class pd_DB(object):
             if os.path.exists(pname):
                 data[name] = pd.read_pickle(pname)
             else:
+                print("read %s from raw"%fname)
                 if dtype is None and prob_dtype:
                     dtype = self._get_dtype(fname,silent=flags.verbosity<=0)
                 data[name] = pd.read_csv(fname,dtype=dtype)
