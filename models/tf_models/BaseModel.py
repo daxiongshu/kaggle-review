@@ -137,7 +137,7 @@ class BaseModel(object):
             opt = tf.train.GradientDescentOptimizer(learning_rate=self.flags.learning_rate)
         elif self.flags.opt == 'momentum':
             opt = tf.train.MomentumOptimizer(learning_rate=self.flags.learning_rate,
-                momentum = self.flags.momentum)
+                momentum = self.flags.momentum,use_nesterov=True)
         elif self.flags.opt == 'rmsprop':
             opt = tf.train.RMSPropOptimizer(learning_rate=self.flags.learning_rate)
         elif self.flags.opt == 'adagrad':

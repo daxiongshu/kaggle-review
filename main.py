@@ -45,6 +45,10 @@ def main(_):
         from comps.income.run import run_sol
     elif FLAGS.comp == "favorita":
         from comps.favorita.run import run_sol
+    elif FLAGS.comp == "tfspeech":
+        from comps.tfspeech.run import run_sol 
+    elif FLAGS.comp == "mercari":
+        from comps.mercari.run import run_sol 
     else:
         print("Unknown competion %s"%FLAGS.comp)
         assert False
