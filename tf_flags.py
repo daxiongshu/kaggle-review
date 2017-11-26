@@ -48,6 +48,7 @@ flags.DEFINE_string('add_paths', None, 'additional input paths')
 flags.DEFINE_string('add_record_paths', None, 'additional records')
 flags.DEFINE_float("momentum",0.0,"momentum")
 flags.DEFINE_float("verbosity",100,"verbosity")
+
 #####################################################################
 
 #####################################################################
@@ -59,7 +60,7 @@ if flags.FLAGS.comp == "instacart":
         flags.DEFINE_integer("dep_embed_size",None,"embedding size of department")
         flags.DEFINE_integer("ail_embed_size",None,"embedding size of aisle")
         flags.DEFINE_integer("max_seq_len",None,"maximum length of the sequence")
-if flags.FLAGS.comp == "personal" or flags.FLAGS.comp == "pt":
+if flags.FLAGS.comp in ["personal","pt","mercari"]:
     flags.DEFINE_integer("window_size",None,"window size for rnn")
     flags.DEFINE_integer("seq_len",None,"length of the sequence")
     flags.DEFINE_integer("d2v_size",None,"d2v_size")

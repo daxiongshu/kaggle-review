@@ -10,6 +10,9 @@ from utils.utils import print_mem_time
 from collections import namedtuple
 
 class pd_DB(object):
+    def __init__(self):
+        self.sp = ','
+
     def build(self):
         self.Table = namedtuple('Table', 'name fname dtype')
         TABLES = [self.Table(i,"%s/%s"%(self.path,j),None) for i,j in zip(self.names,self.fnames)]
@@ -45,14 +48,14 @@ class pd_DB(object):
                 print("read %s from raw"%fname)
                 if dtype is None and prob_dtype:
                     dtype = self._get_dtype(fname,silent=flags.verbosity<=0)
-                data[name] = pd.read_csv(fname,dtype=dtype)
+                data[name] = pd.read_csv(fname,dtype=dtype,sep=self.sp)
                 data[name].to_pickle(pname)
             print_mem_time("Loaded {} {}".format(fname.split('/')[-1],data[name].shape))
         self.data = data # no copy, pass the inference
         print()
 
     def _get_dtype(self,fname,silent=False):
-        data = pd.read_csv(fname).fillna(0)
+        data = pd.read_csv(fname,sep=self.sp).fillna(0)
         cols = data.columns.values
         dtype = {}
         for col in cols:
